@@ -439,7 +439,7 @@ function handleFormSubmit(e) {
       const props = PropertiesService.getScriptProperties();
       props.setProperty("pending_" + state, JSON.stringify(member));
       Logger.log("💾 เก็บข้อมูลรอเชื่อมต่อ LINE (state=" + state + ")");
-      message = "✅ บันทึกข้อมูลสำเร็จ — กรุณาเชื่อมต่อ LINE เพื่อรับบัตรสมาชิก";
+      message = "✅ บันทึกข้อมูลสำเร็จ — กรุณายืนยันการผูกบัญชี LINE เพื่อรับ Flex Message บัตรสมาชิก";
     }
 
     return ContentService.createTextOutput(message + "\nSTATE:" + state);
@@ -779,14 +779,14 @@ function handleOAuthCallback(params) {
       props.deleteProperty("ts_" + userId);
       if (sent) {
         props.deleteProperty("member_" + userId);
-        return ContentService.createTextOutput("✅ เชื่อมต่อ LINE สำเร็จ — ส่งบัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)");
+        return ContentService.createTextOutput("✅ ผูกบัญชี LINE สำเร็จ — ส่ง Flex Message บัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)");
       }
-      return ContentService.createTextOutput("⚠️ เชื่อมต่อ LINE สำเร็จ แต่ replyToken หมดอายุแล้ว — พิมพ์ข้อความในแชท LINE เพื่อรับบัตร");
+      return ContentService.createTextOutput("⚠️ ผูกบัญชี LINE สำเร็จ แต่ replyToken หมดอายุแล้ว — พิมพ์ข้อความในแชท LINE เพื่อรับบัตร");
     }
 
     // ไม่มี token (link event ยังมาไม่ถึง/หมดอายุ) → เก็บไว้รอ link event หรือพิมพ์ข้อความ (fallback)
     props.setProperty("pending_reply_" + userId, JSON.stringify(member));
-    return ContentService.createTextOutput("✅ เชื่อมต่อ LINE สำเร็จ — กำลังส่งบัตรสมาชิก...");
+    return ContentService.createTextOutput("✅ ผูกบัญชี LINE สำเร็จ — กำลังส่ง Flex Message บัตรสมาชิก...");
   } catch (error) {
     Logger.log("❌ handleOAuthCallback Error: " + error.message);
     return ContentService.createTextOutput("❌ เกิดข้อผิดพลาด: " + error.message);
