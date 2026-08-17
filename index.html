@@ -544,7 +544,7 @@
                         } else {
                             showMessage("✅ " + text + " (ไม่พบ userId จาก LINE)", true);
                         }
-                        
+
                         form.reset();
                         lineUserIdInput.value = new URLSearchParams(window.location.search).get("uid") || "";
                         document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
