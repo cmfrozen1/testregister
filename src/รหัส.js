@@ -665,13 +665,13 @@ function getLineBotProfile() {
 }
 
 // ==============================================
-// getBotProfile - ดึงโปรไฟล์ LINE OA สำหรับหน้าเว็บ (มี cache)
-// ใช้จาก success.html ผ่าน google.script.run หรือ fetch แบบ CORS
+// getBotProfile - ดึงโปรไฟล์ LINE OA สำหรับหน้าเว็บ (fetch แบบ CORS)
+// ใช้จาก index.html เพื่อดึง basicId สร้างลิงก์เปิดแชท LINE ทางการ
 // โดยใช้ LINE_CHANNEL_ACCESS_TOKEN ที่ตั้งไว้ใน backend นี้โดยตรง
 // ==============================================
 
 function getBotProfile() {
-  // ดึงจาก LINE API ทุกครั้ง (ไม่ cache) เพื่อให้ success.html
+  // ดึงจาก LINE API ทุกครั้ง (ไม่ cache) เพื่อให้หน้าเว็บ
   // แสดงชื่อ/โลโก้ตามบอทที่ใช้อยู่ล่าสุดเสมอ (AccessToken ใน backend นี้)
   const info = getLineBotProfile();
   if (!info) return { displayName: "", pictureUrl: "", basicId: "" };
@@ -684,20 +684,13 @@ function getBotProfile() {
 }
 
 // ==============================================
-// doGet - เสิร์ฟหน้าเว็บ + API
-//   ?page=success   → เสิร์ฟ success.html ผ่าน GAS (ใช้ google.script.run ได้)
+// doGet - API
 //   ?getProfile=1   → คืนค่า JSON โปรไฟล์ LINE OA (ใช้จากหน้า static ผ่าน CORS)
 //   (ไม่มีพารามิเตอร์) → ดึงจำนวนข้อมูล (ใช้กับปุ่ม "ดูจำนวนผู้ลงทะเบียน")
 // ==============================================
 
 function doGet(e) {
   try {
-    // หน้า success.html โหลดผ่าน GAS → มี google.script ให้เรียก backend ได้
-    if (e && e.parameter && e.parameter.page === "success") {
-      return HtmlService.createHtmlOutputFromFile("success")
-        .setTitle("เชื่อมต่อสำเร็จ");
-    }
-
     // API: ดึงโปรไฟล์ LINE OA (ตอบเป็น JSON สำหรับหน้า static)
     if (e && e.parameter && e.parameter.getProfile === "1") {
       const profile = getBotProfile();
