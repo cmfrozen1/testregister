@@ -85,45 +85,23 @@ function handleLineWebhook(e) {
           props.setProperty("token_" + userId, replyToken);
           props.setProperty("ts_" + userId, String(Date.now()));
 
-          // ✅ หลักการจากคลิป: เก็บ replyToken ไว้ (ยังไม่ใช้!) เพื่อ Reply บัตรสมาชิก
-          //    อัตโนมัติหลังลงทะเบียนภายใน ~1 นาที (Reply API ฟรี ไม่เสียโควต้า push)
+          // ✅ หลักการจากคลิป: หลังลงทะเบียน ผู้ใช้จะพิมพ์ข้อความในแชท LINE OA
+          //    → บอท Reply บัตรสมาชิก (Reply API ฟรี ไม่เสียโควต้า push)
           //    คำเชิญ/ลิงก์ฟอร์ม มาจากข้อความต้อนรับ (Welcome Message) ใน LINE OA Manager
-
-          // ถ้าลงทะเบียนไว้ก่อนแล้ว (ผ่านลิงก์ ?uid=) → ตอบกลับด้วยบัตรสมาชิกเลย (ใช้ token นี้)
-          const memberJson = props.getProperty("member_" + userId);
-          if (memberJson) {
-            replyMemberCardFlex(replyToken, JSON.parse(memberJson));
-            props.deleteProperty("member_" + userId);
-            props.deleteProperty("token_" + userId);
-            props.deleteProperty("ts_" + userId);
-          } else if (REPLY_INVITE_ON_FOLLOW) {
+          if (REPLY_INVITE_ON_FOLLOW) {
             // (ทางเลือก) ส่ง Flex เชิญลงทะเบียนทันที — จะกิน replyToken
             replyFlexMessage(replyToken, userId);
           } else {
-            Logger.log("💾 เก็บ replyToken ไว้ตอบบัตรหลังลงทะเบียน (คำเชิญมาจาก Welcome Message ใน OA Manager)");
+            Logger.log("💾 เก็บ replyToken ไว้ (คำเชิญมาจาก Welcome Message ใน OA Manager)");
           }
           return;
         }
 
-        // ✅ ผู้ใช้เชื่อมต่อ LINE ทางการผ่าน LINE Login (Bot Link) — เก็บ replyToken ไว้
+        // ✅ ผู้ใช้เชื่อมต่อ LINE ทางการผ่าน LINE Login (Bot Link)
+        //    ไม่ตอบกลับอัตโนมัติ — ผู้ใช้จะพิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก
         if (event.type === 'link') {
-          const replyToken = event.replyToken;
           const userId = event.source.userId;
           Logger.log("🔗 ผู้ใช้เชื่อมต่อ LINE (link): " + userId);
-
-          const props = PropertiesService.getScriptProperties();
-          props.setProperty("token_" + userId, replyToken);
-          props.setProperty("ts_" + userId, String(Date.now()));
-
-          // ถ้ามีบัตรรอส่งอยู่ (ลงทะเบียนก่อน แล้วเพิ่งเชื่อมต่อ LINE) → Reply เลย (ฟรี)
-          const pendingReply = props.getProperty("pending_reply_" + userId);
-          if (pendingReply) {
-            replyMemberCardFlex(replyToken, JSON.parse(pendingReply));
-            props.deleteProperty("pending_reply_" + userId);
-            props.deleteProperty("token_" + userId);
-            props.deleteProperty("ts_" + userId);
-            Logger.log("📤 ส่งบัตรสมาชิกที่รออยู่ผ่าน link event (ฟรี)");
-          }
           return;
         }
 
@@ -411,28 +389,13 @@ function handleFormSubmit(e) {
     };
 
     if (userId) {
-      // ✅ มี userId แล้ว → ใช้ replyToken ที่เก็บไว้ตอนแอดเพื่อน/เชื่อมต่อ LINE
-      //    Reply บัตรสมาชิกอัตโนมัติทันที (ฟรี ไม่เสียโควต้า push)
+      // ✅ ตามคลิป: เก็บข้อมูลบัตรไว้ แล้วให้ผู้ใช้พิมพ์ข้อความในแชท LINE OA
+      //    → บอท Reply บัตรสมาชิก + "F" (Reply API ฟรี ไม่เสียโควต้า push)
       const props = PropertiesService.getScriptProperties();
-
-      // เก็บข้อมูลบัตรไว้ (fallback: ถ้า token หมดอายุ ผู้ใช้พิมพ์ข้อความในแชทเพื่อรับบัตร)
       props.setProperty("member_" + userId, JSON.stringify(member));
       Logger.log("💾 เก็บข้อมูลบัตรสมาชิกสำหรับ userId: " + userId);
 
-      const savedToken = props.getProperty("token_" + userId);
-      if (savedToken) {
-        const sent = replyMemberCardFlex(savedToken, member);
-        props.deleteProperty("token_" + userId);
-        props.deleteProperty("ts_" + userId);
-        if (sent) {
-          props.deleteProperty("member_" + userId); // ส่งสำเร็จ → ไม่ต้องส่งซ้ำ
-          message = "✅ บันทึกข้อมูลสำเร็จ — ส่งบัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)";
-        } else {
-          message = "✅ บันทึกข้อมูลสำเร็จ — replyToken หมดอายุแล้ว พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก";
-        }
-      } else {
-        message = "✅ บันทึกข้อมูลสำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
-      }
+      message = "✅ บันทึกข้อมูลสำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
     } else {
       // ✅ ยังไม่เชื่อม LINE → เก็บข้อมูลรอไว้ แล้วเด้งไปหน้าจอ "เชื่อมต่อกับ LINE" ทางการ
       //    พอเชื่อมต่อเสร็จ LINE ส่ง link event → GAS Reply บัตรสมาชิกให้ (ฟรี)
@@ -771,22 +734,12 @@ function handleOAuthCallback(params) {
     const member = JSON.parse(pendingJson);
     props.deleteProperty("pending_" + state);
 
-    // 4) ใช้ replyToken จาก link event (เก็บไว้ตอนเชื่อมต่อ) Reply บัตรสมาชิก (ฟรี ไม่เสียโควต้า)
-    const savedToken = props.getProperty("token_" + userId);
-    if (savedToken) {
-      const sent = replyMemberCardFlex(savedToken, member);
-      props.deleteProperty("token_" + userId);
-      props.deleteProperty("ts_" + userId);
-      if (sent) {
-        props.deleteProperty("member_" + userId);
-        return ContentService.createTextOutput("✅ เชื่อมต่อ LINE สำเร็จ — ส่งบัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)");
-      }
-      return ContentService.createTextOutput("⚠️ เชื่อมต่อ LINE สำเร็จ แต่ replyToken หมดอายุแล้ว — พิมพ์ข้อความในแชท LINE เพื่อรับบัตร");
-    }
+    // 4) ตามคลิป: เก็บบัตรไว้ แล้วให้ผู้ใช้พิมพ์ข้อความในแชท LINE OA
+    //    → บอท Reply บัตรสมาชิก + "F" (Reply API ฟรี ไม่เสียโควต้า push)
+    props.setProperty("member_" + userId, JSON.stringify(member));
+    Logger.log("💾 ผูกบัตรสมาชิกกับ userId: " + userId + " (รอผู้ใช้พิมพ์ข้อความในแชทเพื่อรับบัตร)");
 
-    // ไม่มี token (link event ยังมาไม่ถึง/หมดอายุ) → เก็บไว้รอ link event หรือพิมพ์ข้อความ (fallback)
-    props.setProperty("pending_reply_" + userId, JSON.stringify(member));
-    return ContentService.createTextOutput("✅ เชื่อมต่อ LINE สำเร็จ — กำลังส่งบัตรสมาชิก...");
+    return ContentService.createTextOutput("✅ เชื่อมต่อ LINE สำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)");
   } catch (error) {
     Logger.log("❌ handleOAuthCallback Error: " + error.message);
     return ContentService.createTextOutput("❌ เกิดข้อผิดพลาด: " + error.message);
