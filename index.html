@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบลงทะเบียน</title>
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+
     <style>
         * {
             margin: 0;
@@ -278,6 +278,22 @@
             font-size: 1.6rem;
         }
 
+        .line-hint {
+            margin-top: 14px;
+            padding: 10px 18px;
+            border-radius: 30px;
+            background: #eef6f8;
+            color: #1c4f5e;
+            font-size: 0.85rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .line-hint.show {
+            display: flex;
+        }
+
         .count-section {
             margin-top: 28px;
             padding-top: 25px;
@@ -350,7 +366,15 @@
             <div class="divider"></div>
         </div>
 
+        <div id="lineHint" class="line-hint">
+            <i class="fab fa-line"></i>
+            <span>คุณเข้ามาจาก LINE — กรอกให้เสร็จภายใน 1 นาทีเพื่อรับข้อความยืนยันอัตโนมัติ</span>
+        </div>
+
         <form id="myForm" novalidate>
+            <!-- ซ่อนไว้: userId ของ LINE ที่แนบมาจากลิงก์ใน Flex Message -->
+            <input type="hidden" id="lineUserId" name="lineUserId" value="">
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="firstName"><i class="fas fa-user"></i> ชื่อ</label>
@@ -423,7 +447,7 @@
 
   <script>
     // ============================================================
-    //  🔗 วาง URL ของ Web App ที่ Deploy แล้ว
+    //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
     // ============================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
@@ -438,6 +462,22 @@
     const checkBtn = document.getElementById("checkBtn");
     const countDisplay = document.getElementById("countDisplay");
     const countMsg = document.getElementById("countMsg");
+    const lineUserIdInput = document.getElementById("lineUserId");
+    const lineHint = document.getElementById("lineHint");
+
+    // ============================================================
+    //  ดึง uid จาก query string (?uid=...) ที่แนบมาจากปุ่มใน Flex Message
+    //  แล้วใส่ลงฟอร์ม เพื่อให้ Apps Script รู้ว่า replyToken ของใคร
+    //  ต้องใช้ตอน submit เพื่อส่ง Flex ยืนยันกลับแบบ reply (ฟรี ไม่ใช้ push)
+    // ============================================================
+    function loadLineUserId() {
+        const params = new URLSearchParams(window.location.search);
+        const uid = params.get("uid");
+        if (uid) {
+            lineUserIdInput.value = uid;
+            lineHint.className = "line-hint show";
+        }
+    }
 
     // ============================================================
     //  Helper: แสดงข้อความ
@@ -478,7 +518,11 @@
             .then(text => {
                 if (text.includes("สำเร็จ") || text.includes("Success")) {
                     showMessage("✅ " + text, true);
+                    if (lineUserIdInput.value) {
+                        showMessage("✅ " + text + " กลับไปที่แชท LINE เพื่อดูข้อความยืนยัน", true);
+                    }
                     form.reset();
+                    lineUserIdInput.value = new URLSearchParams(window.location.search).get("uid") || "";
                     document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
                     agree.checked = false;
                     fetchCount();
@@ -497,7 +541,7 @@
     });
 
     // ============================================================
-    //  ดึงจำนวนข้อมูล (GET) - แก้ไขด้วย mode: 'no-cors'
+    //  ดึงจำนวนข้อมูล (GET)
     // ============================================================
     function fetchCount() {
         countMsg.textContent = "⏳ กำลังโหลด...";
@@ -505,7 +549,7 @@
 
         fetch(API_URL, {
                 method: "GET",
-                mode: "no-cors" // เพิ่ม mode: no-cors
+                mode: "no-cors"
             })
             .then(res => res.text())
             .then(text => {
@@ -528,6 +572,7 @@
     checkBtn.addEventListener("click", fetchCount);
 
     window.addEventListener("DOMContentLoaded", function() {
+        loadLineUserId();
         if (API_URL === "YOUR_WEB_APP_URL") {
             countDisplay.textContent = "🔧";
             countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
