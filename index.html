@@ -461,6 +461,7 @@
         //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
         // ============================================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL จริง
+        const SUCCESS_PAGE_URL = "success.html"; // 👈 เปลี่ยนเป็น URL หน้า "เชื่อมต่อสำเร็จ" (linked-success.html) ที่ deploy จริง
 
         // ============================================================
         //  DOM References
@@ -539,17 +540,13 @@
                     console.log("📬 Response from Apps Script:", text);
 
                     if (text.includes("สำเร็จ")) {
-                        if (text.includes("LINE")) {
-                            showMessage("✅ " + text, true);
-                        } else {
-                            showMessage("✅ " + text + " (ไม่พบ userId จาก LINE)", true);
-                        }
+                        showMessage("✅ " + text, true);
 
-                        form.reset();
-                        lineUserIdInput.value = new URLSearchParams(window.location.search).get("uid") || "";
-                        document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
-                        agree.checked = false;
-                        fetchCount();
+                        // ✅ ลงทะเบียนสำเร็จ (Flex Message ถูกส่งไปยัง LINE จากฝั่ง Apps Script แล้ว)
+                        // เด้งไปหน้า "เชื่อมต่อสำเร็จ" หลังจากโชว์ข้อความยืนยันสักครู่
+                        setTimeout(function() {
+                            window.location.href = SUCCESS_PAGE_URL;
+                        }, 1200);
                     } else {
                         showMessage("⚠️ " + text, false);
                     }
