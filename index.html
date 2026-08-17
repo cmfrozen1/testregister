@@ -456,6 +456,18 @@
             <span id="msgText">ส่งข้อมูลสำเร็จ!</span>
         </div>
 
+        <!-- ✅ ตามคลิป: หน้าจอ "ตอนนี้ LINE เชื่อมต่อกับ [ระบบ] แล้ว" (ซ่อนไว้ก่อน) -->
+        <div id="connectedPanel" style="display:none; text-align:center;">
+            <div class="header" style="margin-top:15px;">
+                <div class="icon-circle" style="background:linear-gradient(135deg,#06c755,#049e43);">
+                    <i class="fab fa-line"></i>
+                </div>
+                <h1 id="connectedTitle" style="font-size:1.5rem;">ตอนนี้ LINE เชื่อมต่อกับ <span style="color:#06c755;">ระบบสมาชิก</span> แล้ว</h1>
+                <div class="divider"></div>
+                <p style="color:#4b6a74; font-size:0.95rem; margin-top:10px;">คุณสามารถรับข่าวสารและบริการต่างๆ ผ่าน LINE ได้แล้ว</p>
+            </div>
+        </div>
+
         <!-- ✅ เทคนิคจากคลิป: เปิดแชท LINE OA แล้วพิมพ์ข้อความเพื่อรับบัตรสมาชิก (ฟรี) -->
         <a id="openLineBtn" href="#" target="_blank" rel="noopener"
             style="display:none; margin-top:16px; padding:14px 24px; background:linear-gradient(135deg,#06c755,#049e43); color:#fff; border-radius:50px; font-weight:700; font-size:1rem; text-decoration:none; text-align:center; align-items:center; justify-content:center; gap:10px;">
@@ -498,6 +510,7 @@
         // ============================================================
         const LINE_LOGIN_CHANNEL_ID = "YOUR_LINE_LOGIN_CHANNEL_ID"; // 👈 LINE Developers → LINE Login channel → Channel ID
         const FORM_REDIRECT_URI = window.location.origin + window.location.pathname; // ต้องตรงกับที่ลงทะเบียนใน LINE Login
+        const SYSTEM_NAME = "ระบบสมาชิก"; // 👈 ชื่อระบบ (ในคลิปใช้ "BMI") — แสดงบนหน้า "เชื่อมต่อแล้ว"
 
         // ============================================================
         //  DOM References
@@ -514,6 +527,8 @@
         const lineHint = document.getElementById("lineHint");
         const openLineBtn = document.getElementById("openLineBtn");
         const openLineHint = document.getElementById("openLineHint");
+        const connectedPanel = document.getElementById("connectedPanel");
+        const connectedTitle = document.getElementById("connectedTitle");
 
         // ============================================================
         //  ดึง uid จาก query string (?uid=...)
@@ -578,6 +593,16 @@
                     console.log("📬 completeLink Response:", text);
                     if (text.includes("สำเร็จ")) {
                         showMessage("✅ " + text, true);
+
+                        // ✅ ตามคลิป: ขึ้นหน้าจอ "ตอนนี้ LINE เชื่อมต่อกับ [ระบบ] แล้ว"
+                        if (connectedTitle) {
+                            connectedTitle.innerHTML = "ตอนนี้ LINE เชื่อมต่อกับ <span style=\"color:#06c755;\">" + SYSTEM_NAME + "</span> แล้ว";
+                        }
+                        if (connectedPanel) {
+                            form.style.display = "none";
+                            connectedPanel.style.display = "block";
+                        }
+
                         if (openLineBtn) {
                             openLineBtn.href = oaChatLink;
                             openLineBtn.style.display = "flex";
