@@ -1,14 +1,16 @@
 // ==============================================
-// Code.gs - ระบบลงทะเบียน + LINE Webhook + Member Card (Push API)
+// Code.gs - ระบบลงทะเบียน + LINE Webhook + Member Card (Reply API — ฟรี ไม่เสียโควต้า)
 // ==============================================
 
 const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
 const LINE_CHANNEL_ACCESS_TOKEN = "oVCQJNRQYKH6Dfe75lmrygNDkVVnaqDoUyu4crkUPfMpc88Vhm59VXbOEz5lQmO2y4rYvYf326/Gno9djAJlYDAydHocMRpsfs/9lka8PZQyPJCdJi3ohXU3qYxIHD5tJdaAPh1FxkyrcXCoaE0ptwdB04t89/1O/w1cDnyilFU="; // 👈 AccessToken ของบอท LINE OA (Map_API)
-const REGISTER_FORM_URL = "https://registertest69.netlify.app/";
+const REGISTER_FORM_URL = "https://testregister-ten.vercel.app/";
 const WELCOME_POINTS = 10;           // 👈 แต้มต้อนรับตอนลงทะเบียนสำเร็จ ปรับได้ตรงนี้
 const MEMBER_VALID_YEARS = 1;        // 👈 อายุสมาชิก (ปี) ก่อนหมดอายุ
 const SEND_F_AFTER_REGISTER = true;  // 👈 ส่งข้อความ "F" หลังลงทะเบียนสำเร็จ (meme) — ปิดได้ตรงนี้
 const F_MESSAGE_TEXT = "F";         // 👈 ข้อความที่จะส่ง (เช่น "F" หรือ "F 🙏")
+const REPLY_INVITE_ON_FOLLOW = false; // 👈 หลักการคลิป: false = เก็บ replyToken ไว้ตอบบัตรหลังลงทะเบียน (ฟรี ไม่ใช้ push)
+                                      //     true  = ตอบคำเชิญเองตอนแอดเพื่อน (จะกิน replyToken — ไม่แนะนำ)
 
 // ==============================================
 // doPost - รับข้อมูลทั้งจาก LINE Webhook และฟอร์ม HTML
@@ -26,8 +28,8 @@ function doPost(e) {
     Logger.log("📩 e: " + JSON.stringify(e));
 
     const isLineWebhook = e && e.postData && e.postData.contents &&
-                          e.postData.contents.includes('"events"') &&
-                          e.postData.contents.includes('"replyToken"');
+      e.postData.contents.includes('"events"') &&
+      e.postData.contents.includes('"replyToken"');
 
     Logger.log("🔍 isLineWebhook: " + isLineWebhook);
 
@@ -61,74 +63,82 @@ function handleLineWebhook(e) {
 
     events.forEach(event => {
       try {
-      Logger.log("📌 Event Type: " + event.type);
+        Logger.log("📌 Event Type: " + event.type);
 
-      // ✅ ผู้ใช้เพิ่มเพื่อน LINE OA (จุดเริ่มต้นของการเชื่อมต่อ)
-      if (event.type === 'follow') {
-        const replyToken = event.replyToken;
-        const userId = event.source.userId;
+        // ✅ ผู้ใช้เพิ่มเพื่อน LINE OA (จุดเริ่มต้นของการเชื่อมต่อ)
+        if (event.type === 'follow') {
+          const replyToken = event.replyToken;
+          const userId = event.source.userId;
 
-        Logger.log("👋 ผู้ใช้เพิ่มเพื่อน (follow): " + userId);
+          Logger.log("👋 ผู้ใช้เพิ่มเพื่อน (follow): " + userId);
 
-        const props = PropertiesService.getScriptProperties();
-        props.setProperty("token_" + userId, replyToken);
-        props.setProperty("ts_" + userId, String(Date.now()));
+          const props = PropertiesService.getScriptProperties();
+          props.setProperty("token_" + userId, replyToken);
+          props.setProperty("ts_" + userId, String(Date.now()));
 
-        // ✅ ถ้าลงทะเบียนไว้ก่อนแล้ว (ผ่านลิงก์ ?uid=) → ตอบกลับด้วยบัตรสมาชิกเลย (ฟรี ไม่ใช้ push)
-        const memberJson = props.getProperty("member_" + userId);
-        if (memberJson) {
-          replyMemberCardFlex(replyToken, JSON.parse(memberJson));
+          // ✅ หลักการจากคลิป: เก็บ replyToken ไว้ (ยังไม่ใช้!) เพื่อ Reply บัตรสมาชิก
+          //    อัตโนมัติหลังลงทะเบียนภายใน ~1 นาที (Reply API ฟรี ไม่เสียโควต้า push)
+          //    คำเชิญ/ลิงก์ฟอร์ม มาจากข้อความต้อนรับ (Welcome Message) ใน LINE OA Manager
+
+          // ถ้าลงทะเบียนไว้ก่อนแล้ว (ผ่านลิงก์ ?uid=) → ตอบกลับด้วยบัตรสมาชิกเลย (ใช้ token นี้)
+          const memberJson = props.getProperty("member_" + userId);
+          if (memberJson) {
+            replyMemberCardFlex(replyToken, JSON.parse(memberJson));
+            props.deleteProperty("member_" + userId);
+            props.deleteProperty("token_" + userId);
+            props.deleteProperty("ts_" + userId);
+          } else if (REPLY_INVITE_ON_FOLLOW) {
+            // (ทางเลือก) ส่ง Flex เชิญลงทะเบียนทันที — จะกิน replyToken
+            replyFlexMessage(replyToken, userId);
+          } else {
+            Logger.log("💾 เก็บ replyToken ไว้ตอบบัตรหลังลงทะเบียน (คำเชิญมาจาก Welcome Message ใน OA Manager)");
+          }
+          return;
+        }
+
+        // ✅ ผู้ใช้บล็อก/ลบเพื่อน LINE OA (ยกเลิกการเชื่อมต่อ)
+        if (event.type === 'unfollow') {
+          const userId = event.source.userId;
+          Logger.log("🚫 ผู้ใช้บล็อก/ลบเพื่อน (unfollow): " + userId);
+
+          const props = PropertiesService.getScriptProperties();
+          props.deleteProperty("token_" + userId);
+          props.deleteProperty("ts_" + userId);
           props.deleteProperty("member_" + userId);
-        } else {
-          // ส่ง Flex เชิญลงทะเบียนทันที ไม่ต้องรอให้พิมพ์ข้อความก่อน
-          replyFlexMessage(replyToken, userId);
+          return;
         }
-        return;
-      }
 
-      // ✅ ผู้ใช้บล็อก/ลบเพื่อน LINE OA (ยกเลิกการเชื่อมต่อ)
-      if (event.type === 'unfollow') {
-        const userId = event.source.userId;
-        Logger.log("🚫 ผู้ใช้บล็อก/ลบเพื่อน (unfollow): " + userId);
+        if (event.type === 'message' && event.message.type === 'text') {
+          const replyToken = event.replyToken;
+          const userId = event.source.userId;
+          const userMessage = event.message.text;
 
-        const props = PropertiesService.getScriptProperties();
-        props.deleteProperty("token_" + userId);
-        props.deleteProperty("ts_" + userId);
-        props.deleteProperty("member_" + userId);
-        return;
-      }
+          Logger.log("✅ replyToken: " + replyToken);
+          Logger.log("👤 userId: " + userId);
+          Logger.log("💬 ข้อความ: " + userMessage);
 
-      if (event.type === 'message' && event.message.type === 'text') {
-        const replyToken = event.replyToken;
-        const userId = event.source.userId;
-        const userMessage = event.message.text;
+          // ✅ เก็บ replyToken
+          const props = PropertiesService.getScriptProperties();
+          props.setProperty("token_" + userId, replyToken);
+          props.setProperty("ts_" + userId, String(Date.now()));
+          props.setProperty("last_replyToken", replyToken);
+          props.setProperty("last_userId", userId);
+          props.setProperty("last_message", userMessage);
 
-        Logger.log("✅ replyToken: " + replyToken);
-        Logger.log("👤 userId: " + userId);
-        Logger.log("💬 ข้อความ: " + userMessage);
-
-        // ✅ เก็บ replyToken
-        const props = PropertiesService.getScriptProperties();
-        props.setProperty("token_" + userId, replyToken);
-        props.setProperty("ts_" + userId, String(Date.now()));
-        props.setProperty("last_replyToken", replyToken);
-        props.setProperty("last_userId", userId);
-        props.setProperty("last_message", userMessage);
-
-        // ✅ เทคนิคจากคลิป (0:26): ถ้าผู้ใช้ลงทะเบียนแล้ว → ตอบกลับด้วยบัตรสมาชิก
-        //    (Reply API ฟรี ไม่เสียโควต้า push — ได้ replyToken ใหม่ทุกครั้งที่ผู้ใช้พิมพ์)
-        const memberJson = props.getProperty("member_" + userId);
-        if (memberJson) {
-          replyMemberCardFlex(replyToken, JSON.parse(memberJson));
-          props.deleteProperty("member_" + userId); // ส่งครั้งเดียว
-        } else {
-          // ✅ ส่ง Flex Message (replyToken ใช้ได้ครั้งเดียว
-          //  จึงไม่ควรส่งข้อความทดสอบก่อน เพราะจะกิน token ไปก่อน)
-          replyFlexMessage(replyToken, userId);
+          // ✅ เทคนิคจากคลิป (0:26): ถ้าผู้ใช้ลงทะเบียนแล้ว → ตอบกลับด้วยบัตรสมาชิก
+          //    (Reply API ฟรี ไม่เสียโควต้า push — ได้ replyToken ใหม่ทุกครั้งที่ผู้ใช้พิมพ์)
+          const memberJson = props.getProperty("member_" + userId);
+          if (memberJson) {
+            replyMemberCardFlex(replyToken, JSON.parse(memberJson));
+            props.deleteProperty("member_" + userId); // ส่งครั้งเดียว
+          } else {
+            // ✅ ส่ง Flex Message (replyToken ใช้ได้ครั้งเดียว
+            //  จึงไม่ควรส่งข้อความทดสอบก่อน เพราะจะกิน token ไปก่อน)
+            replyFlexMessage(replyToken, userId);
+          }
+        } else if (event.type !== 'follow' && event.type !== 'unfollow') {
+          Logger.log("⚠️ Event ไม่ใช่ข้อความ: " + event.type);
         }
-      } else if (event.type !== 'follow' && event.type !== 'unfollow') {
-        Logger.log("⚠️ Event ไม่ใช่ข้อความ: " + event.type);
-      }
       } catch (err) {
         Logger.log("⚠️ Event ผิดพลาด (ไม่หยุดทั้ง batch): " + err.message);
       }
@@ -358,9 +368,9 @@ function handleFormSubmit(e) {
     let message = "✅ บันทึกข้อมูลสำเร็จ";
 
     if (userId) {
-      // ✅ เทคนิคจากคลิป (0:26): เก็บข้อมูลบัตรสมาชิกไว้ใน Properties
-      //    แล้วตอบกลับ (Reply) ด้วยบัตรสมาชิกตอนผู้ใช้พิมพ์ข้อความในแชท LINE OA
-      //    → ไม่ใช้ Push API → ฟรี ไม่เสียโควต้า
+      // ✅ หลักการจากคลิป: ใช้ replyToken ที่เก็บไว้ตอนแอดเพื่อน
+      //    Reply บัตรสมาชิกอัตโนมัติทันทีหลังลงทะเบียน (ฟรี ไม่เสียโควต้า push)
+      //    ต้องลงทะเบียนให้เสร็จภายใน ~1 นาที (replyToken หมดอายุ)
       const expireDate = new Date();
       expireDate.setFullYear(expireDate.getFullYear() + MEMBER_VALID_YEARS);
 
@@ -370,15 +380,26 @@ function handleFormSubmit(e) {
         phone: data.phone,
         expireDate: formatThaiDate(expireDate)
       };
-      PropertiesService.getScriptProperties().setProperty("member_" + userId, JSON.stringify(member));
+      const props = PropertiesService.getScriptProperties();
+
+      // เก็บข้อมูลบัตรไว้ (fallback: ถ้า token หมดอายุ ผู้ใช้พิมพ์ข้อความในแชทเพื่อรับบัตร)
+      props.setProperty("member_" + userId, JSON.stringify(member));
       Logger.log("💾 เก็บข้อมูลบัตรสมาชิกสำหรับ userId: " + userId);
 
-      // ล้าง replyToken เก่า (จะได้ replyToken ใหม่ตอนผู้ใช้พิมพ์ข้อความ)
-      const props = PropertiesService.getScriptProperties();
-      props.deleteProperty("token_" + userId);
-      props.deleteProperty("ts_" + userId);
-
-      message = "✅ บันทึกข้อมูลสำเร็จ — เปิด LINE แล้วพิมพ์ข้อความในแชทเพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
+      const savedToken = props.getProperty("token_" + userId);
+      if (savedToken) {
+        const sent = replyMemberCardFlex(savedToken, member);
+        props.deleteProperty("token_" + userId);
+        props.deleteProperty("ts_" + userId);
+        if (sent) {
+          props.deleteProperty("member_" + userId); // ส่งสำเร็จ → ไม่ต้องส่งซ้ำ
+          message = "✅ บันทึกข้อมูลสำเร็จ — ส่งบัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)";
+        } else {
+          message = "✅ บันทึกข้อมูลสำเร็จ — replyToken หมดอายุแล้ว พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก";
+        }
+      } else {
+        message = "✅ บันทึกข้อมูลสำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
+      }
     } else {
       message = "✅ บันทึกข้อมูลสำเร็จ (ไม่พบ userId จาก LINE)";
     }
@@ -630,7 +651,7 @@ function buildInfoRow(label, value) {
  */
 function formatThaiDate(date) {
   const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-                       "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
   const day = date.getDate();
   const month = thaiMonths[date.getMonth()];
   const buddhistYear = date.getFullYear() + 543;

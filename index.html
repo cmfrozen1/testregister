@@ -392,7 +392,7 @@
 
         <div id="lineHint" class="line-hint">
             <i class="fab fa-line"></i>
-            <span>คุณเข้ามาจาก LINE — หลังลงทะเบียน พิมพ์ข้อความในแชทนี้เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)</span>
+            <span>คุณเข้ามาจาก LINE — กรอกให้เสร็จภายใน 1 นาที บัตรสมาชิกจะถูกส่งให้อัตโนมัติ (ฟรี ไม่เสียโควต้า)</span>
         </div>
 
         <form id="myForm" novalidate>
@@ -588,22 +588,15 @@
                     console.log("📬 Response from Apps Script:", text);
 
                     if (text.includes("สำเร็จ")) {
-                        // ✅ เทคนิคจากคลิป: หลังลงทะเบียน → เปิดแชท LINE OA โดยตรง
-                        //    แล้วพิมพ์ข้อความ → บอท Reply ด้วยบัตรสมาชิก (ฟรี ไม่ใช้ push)
-                        //    (ไม่มีหน้า success.html — ผลลัพธ์ยืนยันอยู่ใน LINE)
+                        // ✅ หลักการจากคลิป: GAS จะ Reply บัตรสมาชิกอัตโนมัติผ่าน replyToken
+                        //    ที่เก็บไว้ตอนแอดเพื่อน (ฟรี ไม่ใช้ push — ไม่มีหน้า success.html)
                         showMessage("✅ " + text, true);
 
-                        // เฉพาะเมื่อมี userId (มาจากลิงก์ ?uid=) → เด้งเข้าแชท LINE OA
-                        if (lineUserIdInput.value) {
-                            if (openLineBtn) {
-                                openLineBtn.href = oaChatLink;
-                                openLineBtn.style.display = "flex";
-                                if (openLineHint) openLineHint.style.display = "block";
-                            }
-                            // เปิดแชท LINE OA ให้เลย (เด้งกลับเข้าแอป LINE)
-                            setTimeout(function () {
-                                window.location.href = oaChatLink;
-                            }, 2000);
+                        // ปุ่มเปิดแชท LINE (fallback ถ้า replyToken หมดอายุ ต้องพิมพ์ข้อความรับบัตร)
+                        if (lineUserIdInput.value && openLineBtn) {
+                            openLineBtn.href = oaChatLink;
+                            openLineBtn.style.display = "flex";
+                            if (openLineHint) openLineHint.style.display = "block";
                         }
                     } else {
                         showMessage("⚠️ " + text, false);
