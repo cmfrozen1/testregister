@@ -4,11 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบลงทะเบียน</title>
-
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    <title>เชื่อมต่อสำเร็จ</title>
     <style>
         * {
             margin: 0;
@@ -18,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(145deg, #0f2f3a 0%, #1a5f6e 100%);
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,583 +22,137 @@
             padding: 30px 20px;
         }
 
-        .container {
-            max-width: 720px;
+        .card {
+            max-width: 380px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(10px);
-            border-radius: 35px;
-            padding: 45px 40px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-3px);
-        }
-
-        .header {
             text-align: center;
-            margin-bottom: 30px;
         }
 
-        .header .icon-circle {
-            background: linear-gradient(135deg, #1f7a8c, #0e4d5e);
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
+        /* แถวโลโก้: LINE — ไอคอนเชื่อมต่อ — โลโก้ของระบบเรา */
+        .logo-row {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            box-shadow: 0 10px 25px rgba(31, 122, 140, 0.4);
+            gap: 22px;
+            margin-bottom: 34px;
         }
 
-        .header .icon-circle i {
-            font-size: 35px;
-            color: white;
+        .logo-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0b3b4b;
+        .logo-circle.line {
+            background: #06c755;
+        }
+
+        .logo-circle.line svg {
+            width: 34px;
+            height: 34px;
+            fill: #ffffff;
+        }
+
+        .logo-circle.brand {
+            background: #f2f2f2;
+        }
+
+        /* 👇 ถ้ามีโลโก้จริงเป็นไฟล์ภาพ ให้แทน <span> ด้านล่างด้วย <img src="logo.png"> */
+        .logo-circle.brand span {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #333;
             letter-spacing: 0.5px;
         }
 
-        .header p {
-            color: #4b6a74;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-
-        .header .divider {
-            height: 3px;
-            background: linear-gradient(to right, transparent, #1f7a8c, transparent);
-            width: 80px;
-            margin: 12px auto 0;
-            border-radius: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #1c4f5e;
-            font-size: 0.92rem;
-            margin-bottom: 6px;
-        }
-
-        .form-group label i {
-            margin-right: 8px;
-            color: #1f7a8c;
-            width: 20px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 13px 18px 13px 45px;
-            font-size: 1rem;
-            border: 2px solid #dce8ec;
-            border-radius: 30px;
-            background: #f8fbfc;
-            transition: all 0.3s ease;
-            outline: none;
-            color: #0c3b48;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #1f7a8c;
-            background: #ffffff;
-            box-shadow: 0 0 0 5px rgba(31, 122, 140, 0.12);
-        }
-
-        .form-group .input-icon {
-            position: absolute;
-            left: 18px;
-            top: 42px;
-            color: #6f8f9a;
-            font-size: 1.1rem;
-            transition: 0.3s;
-            pointer-events: none;
-        }
-
-        .form-group input:focus~.input-icon,
-        .form-group textarea:focus~.input-icon {
-            color: #1f7a8c;
-        }
-
-        .form-group textarea {
-            padding-top: 15px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-        }
-
-        .form-row .form-group {
-            flex: 1 1 200px;
-        }
-
-        .radio-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px 30px;
-            background: #f0f6f8;
-            padding: 12px 22px;
-            border-radius: 40px;
-            border: 2px solid #dce8ec;
-        }
-
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #1c4f5e;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-
-        .radio-group input[type="radio"] {
-            accent-color: #1f7a8c;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            margin: 0;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            background: #f0f6f8;
-            padding: 14px 22px;
-            border-radius: 40px;
-            border: 2px solid #dce8ec;
-            margin: 6px 0 10px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
+        .link-icon {
             width: 20px;
             height: 20px;
-            accent-color: #1f7a8c;
-            margin-top: 2px;
-            flex-shrink: 0;
-            cursor: pointer;
+            color: #b5b5b5;
         }
 
-        .checkbox-group label {
-            font-weight: 500;
-            color: #1c4f5e;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #1f7a8c, #0e4d5e);
-            border: none;
-            border-radius: 50px;
-            font-size: 1.2rem;
+        h1 {
+            font-size: 1.15rem;
             font-weight: 700;
-            color: white;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: 0 8px 20px rgba(31, 122, 140, 0.35);
+            color: #1a1a1a;
+            line-height: 1.5;
+            margin-bottom: 10px;
         }
 
-        .btn-submit:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2596ab, #0f5a6b);
-            transform: scale(1.02);
-            box-shadow: 0 12px 30px rgba(31, 122, 140, 0.5);
+        h1 .brand-name {
+            color: #06c755;
         }
 
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .msg-box {
-            padding: 14px 20px;
-            border-radius: 30px;
-            margin-top: 18px;
-            display: none;
-            align-items: center;
-            gap: 14px;
-            font-weight: 500;
-            border-left: 5px solid;
-        }
-
-        .msg-box.show {
-            display: flex;
-        }
-
-        .msg-box.success {
-            background: #e1f3f0;
-            color: #0b4b4b;
-            border-color: #1f7a8c;
-        }
-
-        .msg-box.success i {
-            color: #1f7a8c;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.error {
-            background: #fee8e8;
-            color: #a13030;
-            border-color: #c6363c;
-        }
-
-        .msg-box.error i {
-            color: #c6363c;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.loading {
-            background: #eef6f8;
-            color: #1c4f5e;
-            border-color: #1f7a8c;
-        }
-
-        .msg-box.loading i {
-            color: #1f7a8c;
-            font-size: 1.6rem;
-        }
-
-        .line-hint {
-            margin-top: 14px;
-            padding: 10px 18px;
-            border-radius: 30px;
-            background: #eef6f8;
-            color: #1c4f5e;
+        p.subtext {
             font-size: 0.85rem;
-            display: none;
-            align-items: center;
-            gap: 10px;
+            color: #8b8b8b;
+            line-height: 1.6;
         }
 
-        .line-hint.show {
+        .footer-links {
+            margin-top: 60px;
             display: flex;
+            justify-content: center;
+            gap: 18px;
+            font-size: 0.75rem;
+            color: #b0b0b0;
         }
 
-        .count-section {
-            margin-top: 28px;
-            padding-top: 25px;
-            border-top: 2px solid #e2eef2;
-            text-align: center;
+        .footer-links a {
+            color: #b0b0b0;
+            text-decoration: none;
         }
 
-        .count-section .count-number {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #0b3b4b;
-            background: #eef6f8;
-            padding: 8px 30px;
-            border-radius: 50px;
-            display: inline-block;
-            margin: 8px 0 15px;
-            min-width: 80px;
-        }
-
-        .btn-check {
-            background: transparent;
-            border: 2px solid #1f7a8c;
-            color: #1f7a8c;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-check:hover {
-            background: #1f7a8c;
-            color: white;
-            box-shadow: 0 6px 18px rgba(31, 122, 140, 0.3);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            font-size: 0.8rem;
-            color: #8aa8b2;
-        }
-
-        .footer i {
-            color: #1f7a8c;
-        }
-
-        @media (max-width: 550px) {
-            .container { padding: 28px 18px; }
-            .header h1 { font-size: 1.6rem; }
-            .form-group input,
-            .form-group textarea { padding-left: 40px; font-size: 0.95rem; }
-            .radio-group { gap: 12px; padding: 12px 16px; }
+        .footer-links a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="icon-circle">
-                <i class="fas fa-user-plus"></i>
+
+    <div class="card">
+        <div class="logo-row">
+            <div class="logo-circle line">
+                <!-- LINE speech-bubble icon -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C6.48 2 2 5.85 2 10.6c0 4.24 3.53 7.79 8.31 8.47.32.07.76.21.87.49.1.25.06.65.03.9l-.14.86c-.04.25-.2.99.86.54 1.06-.45 5.73-3.37 7.82-5.77C21.24 13.99 22 12.38 22 10.6 22 5.85 17.52 2 12 2z" />
+                </svg>
             </div>
-            <h1>ลงทะเบียน</h1>
-            <p>กรอกข้อมูลเพื่อเข้าร่วมกิจกรรม</p>
-            <div class="divider"></div>
+
+            <!-- ไอคอนเชื่อมต่อ (chain link) -->
+            <svg class="link-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M9 15l6-6" />
+                <path d="M11 5l1-1a3.5 3.5 0 015 5l-1 1" />
+                <path d="M13 19l-1 1a3.5 3.5 0 01-5-5l1-1" />
+            </svg>
+
+            <!-- โลโก้จริงของ LINE OA (ดึงจาก getLineBotProfile()) -->
+            <div class="logo-circle brand">
+                <img src="https://profile.line-scdn.net/0hka7b5wI6NE4KGyfYJ99LGTZeOiN9NTIGcnksIHoZY3cmIidLYnQrfy9La3pyLnVPMHUrfCgaa3Yl"
+                    alt="โลโก้ LINE OA" style="width:100%; height:100%; object-fit:cover;"
+                    onerror="this.style.display='none'; this.parentNode.querySelector('span').style.display='flex';">
+                <span style="display:none;">บอตแจ้งผลการเรียน</span>
+            </div>
         </div>
 
-        <div id="lineHint" class="line-hint">
-            <i class="fab fa-line"></i>
-            <span>คุณเข้ามาจาก LINE — กรอกให้เสร็จภายใน 1 นาทีเพื่อรับข้อความยืนยันอัตโนมัติ</span>
-        </div>
+        <!-- 👇 แก้ชื่อระบบ/ข้อความตรงนี้ -->
+        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name">ระบบของเรา</span> แล้ว</h1>
+        <p class="subtext">ท่านสามารถรับข่าวสารและบริการต่างๆ<br>ผ่านบัญชีที่ผูกไว้ได้ในตอนนี้</p>
 
-        <form id="myForm" novalidate>
-            <!-- ซ่อน userId ของ LINE ที่แนบมาจากลิงก์ -->
-            <input type="hidden" id="lineUserId" name="lineUserId" value="">
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName"><i class="fas fa-user"></i> ชื่อ</label>
-                    <input type="text" id="firstName" name="firstname" placeholder="เช่น สมชาย" required>
-                    <i class="fas fa-user input-icon"></i>
-                </div>
-                <div class="form-group">
-                    <label for="lastName"><i class="fas fa-user-tag"></i> นามสกุล</label>
-                    <input type="text" id="lastName" name="lastname" placeholder="เช่น ใจดี" required>
-                    <i class="fas fa-user-tag input-icon"></i>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="email"><i class="fas fa-envelope"></i> อีเมล</label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" required>
-                <i class="fas fa-envelope input-icon"></i>
-            </div>
-
-            <div class="form-group">
-                <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
-                <input type="tel" id="phone" name="phone" placeholder="081-234-5678" required>
-                <i class="fas fa-phone-alt input-icon"></i>
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-venus-mars"></i> เพศ</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="gender" value="ชาย"> ชาย</label>
-                    <label><input type="radio" name="gender" value="หญิง"> หญิง</label>
-                    <label><input type="radio" name="gender" value="ไม่ระบุ" checked> ไม่ระบุ</label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="interest"><i class="fas fa-star"></i> ความสนใจ / ข้อความเพิ่มเติม</label>
-                <textarea id="interest" name="interest" placeholder="บอกอะไรเกี่ยวกับตัวคุณ..."></textarea>
-                <i class="fas fa-pen input-icon" style="top: 42px;"></i>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="agree" name="agree" required>
-                <label for="agree">
-                    <i class="fas fa-check-circle"></i> ยอมรับ <strong>ข้อกำหนดและเงื่อนไข</strong>
-                </label>
-            </div>
-
-            <button type="submit" class="btn-submit" id="sub">
-                <i class="fas fa-paper-plane"></i> ลงทะเบียน
-            </button>
-        </form>
-
-        <div id="msgBox" class="msg-box">
-            <i id="msgIcon" class="fas fa-check-circle"></i>
-            <span id="msgText">ส่งข้อมูลสำเร็จ!</span>
-        </div>
-
-        <div class="count-section">
-            <div class="count-number" id="countDisplay">-</div>
-            <button class="btn-check" id="checkBtn">
-                <i class="fas fa-sync-alt"></i> ดูจำนวนผู้ลงทะเบียน
-            </button>
-            <div id="countMsg" style="margin-top:10px; color:#4b6a74;"></div>
-        </div>
-
-        <div class="footer">
-            <i class="fas fa-shield-alt"></i> ข้อมูลของคุณจะถูกเก็บเป็นความลับ
+        <div class="footer-links">
+            <a href="#">ข้อตกลงการใช้บริการ</a>
+            <a href="#">นโยบายความเป็นส่วนตัว</a>
         </div>
     </div>
 
-    <script>
-        // ============================================================
-        //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
-        // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL จริง
-        const SUCCESS_PAGE_URL = "success.html"; // 👈 เปลี่ยนเป็น URL หน้า "เชื่อมต่อสำเร็จ" (linked-success.html) ที่ deploy จริง
-
-        // ============================================================
-        //  DOM References
-        // ============================================================
-        const form = document.getElementById("myForm");
-        const subBtn = document.getElementById("sub");
-        const msgBox = document.getElementById("msgBox");
-        const msgIcon = document.getElementById("msgIcon");
-        const msgText = document.getElementById("msgText");
-        const checkBtn = document.getElementById("checkBtn");
-        const countDisplay = document.getElementById("countDisplay");
-        const countMsg = document.getElementById("countMsg");
-        const lineUserIdInput = document.getElementById("lineUserId");
-        const lineHint = document.getElementById("lineHint");
-
-        // ============================================================
-        //  ดึง uid จาก query string (?uid=...)
-        // ============================================================
-        function loadLineUserId() {
-            const params = new URLSearchParams(window.location.search);
-            const uid = params.get("uid");
-            if (uid) {
-                lineUserIdInput.value = uid;
-                lineHint.className = "line-hint show";
-                console.log("✅ ตรวจพบ userId จาก LINE: " + uid);
-            } else {
-                console.log("ℹ️ ไม่มี userId จาก LINE (เปิดฟอร์มตรง)");
-            }
-        }
-
-        // ============================================================
-        //  Helper: แสดงข้อความ
-        // ============================================================
-        function showMessage(text, isSuccess = true, isLoading = false) {
-            if (isLoading) {
-                msgBox.className = "msg-box show loading";
-                msgIcon.className = "fas fa-spinner fa-spin";
-            } else {
-                msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
-                msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
-            }
-            msgText.textContent = text;
-        }
-
-        function hideMessage() {
-            msgBox.className = "msg-box";
-        }
-
-        // ============================================================
-        //  ส่งข้อมูล (POST)
-        // ============================================================
-        form.addEventListener("submit", function(e) {
-            e.preventDefault();
-            hideMessage();
-
-            const agree = document.getElementById("agree");
-            if (!agree.checked) {
-                showMessage("กรุณายอมรับข้อกำหนดและเงื่อนไข", false);
-                return;
-            }
-
-            subBtn.disabled = true;
-            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
-
-            // ✅ แสดงข้อความกำลังเชื่อมต่อ LINE OA
-            showMessage("⏳ กำลังบันทึกข้อมูลและเชื่อมต่อ LINE OA...", true, true);
-
-            const data = new FormData(form);
-
-            fetch(API_URL, {
-                    method: "POST",
-                    body: data
-                })
-                .then(res => res.text())
-                .then(text => {
-                    console.log("📬 Response from Apps Script:", text);
-
-                    if (text.includes("สำเร็จ")) {
-                        showMessage("✅ " + text, true);
-
-                        // ✅ ลงทะเบียนสำเร็จ (Flex Message ถูกส่งไปยัง LINE จากฝั่ง Apps Script แล้ว)
-                        // เด้งไปหน้า "เชื่อมต่อสำเร็จ" หลังจากโชว์ข้อความยืนยันสักครู่
-                        setTimeout(function() {
-                            window.location.href = SUCCESS_PAGE_URL;
-                        }, 1200);
-                    } else {
-                        showMessage("⚠️ " + text, false);
-                    }
-                })
-                .catch(err => {
-                    showMessage("❌ เกิดข้อผิดพลาด: " + err.message, false);
-                    console.error("❌ Fetch Error:", err);
-                })
-                .finally(() => {
-                    subBtn.disabled = false;
-                    subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
-                });
-        });
-
-        // ============================================================
-        //  ดึงจำนวนข้อมูล (GET)
-        // ============================================================
-        function fetchCount() {
-            countMsg.textContent = "⏳ กำลังโหลด...";
-            countDisplay.textContent = "...";
-
-            fetch(API_URL)
-                .then(res => res.text())
-                .then(text => {
-                    console.log("📬 Count Response:", text);
-                    const num = parseInt(text);
-                    if (!isNaN(num)) {
-                        countDisplay.textContent = num;
-                        countMsg.textContent = "✅ อัปเดตล่าสุด";
-                    } else {
-                        countDisplay.textContent = "❓";
-                        countMsg.textContent = text;
-                    }
-                })
-                .catch(err => {
-                    countDisplay.textContent = "❌";
-                    countMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-                    console.error("❌ Fetch Error:", err);
-                });
-        }
-
-        checkBtn.addEventListener("click", fetchCount);
-
-        // ============================================================
-        //  โหลดหน้า
-        // ============================================================
-        window.addEventListener("DOMContentLoaded", function() {
-            loadLineUserId();
-            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
-                countDisplay.textContent = "🔧";
-                countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
-            } else {
-                fetchCount();
-            }
-        });
-    </script>
 </body>
 
 </html>
