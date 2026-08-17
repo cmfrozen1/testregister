@@ -588,15 +588,20 @@
                     console.log("📬 Response from Apps Script:", text);
 
                     if (text.includes("สำเร็จ")) {
-                        // ✅ หลักการจากคลิป: GAS จะ Reply บัตรสมาชิกอัตโนมัติผ่าน replyToken
+                        // ✅ หลักการจากคลิป: GAS Reply บัตรสมาชิกอัตโนมัติผ่าน replyToken
                         //    ที่เก็บไว้ตอนแอดเพื่อน (ฟรี ไม่ใช้ push — ไม่มีหน้า success.html)
                         showMessage("✅ " + text, true);
 
-                        // ปุ่มเปิดแชท LINE (fallback ถ้า replyToken หมดอายุ ต้องพิมพ์ข้อความรับบัตร)
-                        if (lineUserIdInput.value && openLineBtn) {
-                            openLineBtn.href = oaChatLink;
-                            openLineBtn.style.display = "flex";
-                            if (openLineHint) openLineHint.style.display = "block";
+                        // ตามคลิป: ลงทะเบียนเสร็จ → เด้งเข้าแชท LINE OA แล้วเห็นบัตร Flex ในแชท
+                        if (lineUserIdInput.value) {
+                            if (openLineBtn) {
+                                openLineBtn.href = oaChatLink;
+                                openLineBtn.style.display = "flex";
+                                if (openLineHint) openLineHint.style.display = "block";
+                            }
+                            setTimeout(function () {
+                                window.location.href = oaChatLink;
+                            }, 3000);
                         }
                     } else {
                         showMessage("⚠️ " + text, false);
