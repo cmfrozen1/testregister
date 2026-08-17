@@ -421,116 +421,121 @@
         </div>
     </div>
 
-    <script>
-        // ============================================================
-        //  🔗 วาง URL ของ Web App ที่ Deploy แล้ว
-        // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
+  <script>
+    // ============================================================
+    //  🔗 วาง URL ของ Web App ที่ Deploy แล้ว
+    // ============================================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
-        // ============================================================
-        //  DOM References
-        // ============================================================
-        const form = document.getElementById("myForm");
-        const subBtn = document.getElementById("sub");
-        const msgBox = document.getElementById("msgBox");
-        const msgIcon = document.getElementById("msgIcon");
-        const msgText = document.getElementById("msgText");
-        const checkBtn = document.getElementById("checkBtn");
-        const countDisplay = document.getElementById("countDisplay");
-        const countMsg = document.getElementById("countMsg");
+    // ============================================================
+    //  DOM References
+    // ============================================================
+    const form = document.getElementById("myForm");
+    const subBtn = document.getElementById("sub");
+    const msgBox = document.getElementById("msgBox");
+    const msgIcon = document.getElementById("msgIcon");
+    const msgText = document.getElementById("msgText");
+    const checkBtn = document.getElementById("checkBtn");
+    const countDisplay = document.getElementById("countDisplay");
+    const countMsg = document.getElementById("countMsg");
 
-        // ============================================================
-        //  Helper: แสดงข้อความ
-        // ============================================================
-        function showMessage(text, isSuccess = true) {
-            msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
-            msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
-            msgText.textContent = text;
+    // ============================================================
+    //  Helper: แสดงข้อความ
+    // ============================================================
+    function showMessage(text, isSuccess = true) {
+        msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
+        msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+        msgText.textContent = text;
+    }
+
+    function hideMessage() {
+        msgBox.className = "msg-box";
+    }
+
+    // ============================================================
+    //  ส่งข้อมูล (POST)
+    // ============================================================
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        hideMessage();
+
+        const agree = document.getElementById("agree");
+        if (!agree.checked) {
+            showMessage("กรุณายอมรับข้อกำหนดและเงื่อนไข", false);
+            return;
         }
 
-        function hideMessage() {
-            msgBox.className = "msg-box";
+        subBtn.disabled = true;
+        subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
+
+        const data = new FormData(form);
+
+        fetch(API_URL, {
+                method: "POST",
+                body: data
+            })
+            .then(res => res.text())
+            .then(text => {
+                if (text.includes("สำเร็จ") || text.includes("Success")) {
+                    showMessage("✅ " + text, true);
+                    form.reset();
+                    document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
+                    agree.checked = false;
+                    fetchCount();
+                } else {
+                    showMessage("⚠️ " + text, false);
+                }
+            })
+            .catch(err => {
+                showMessage("❌ เกิดข้อผิดพลาด: " + err.message, false);
+                console.error("❌ Fetch Error:", err);
+            })
+            .finally(() => {
+                subBtn.disabled = false;
+                subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
+            });
+    });
+
+    // ============================================================
+    //  ดึงจำนวนข้อมูล (GET) - แก้ไขด้วย mode: 'no-cors'
+    // ============================================================
+    function fetchCount() {
+        countMsg.textContent = "⏳ กำลังโหลด...";
+        countDisplay.textContent = "...";
+
+        fetch(API_URL, {
+                method: "GET",
+                mode: "no-cors" // เพิ่ม mode: no-cors
+            })
+            .then(res => res.text())
+            .then(text => {
+                const num = parseInt(text);
+                if (!isNaN(num)) {
+                    countDisplay.textContent = num;
+                    countMsg.textContent = "✅ อัปเดตล่าสุด";
+                } else {
+                    countDisplay.textContent = "❓";
+                    countMsg.textContent = text;
+                }
+            })
+            .catch(err => {
+                countDisplay.textContent = "❌";
+                countMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
+                console.error("❌ Fetch Error:", err);
+            });
+    }
+
+    checkBtn.addEventListener("click", fetchCount);
+
+    window.addEventListener("DOMContentLoaded", function() {
+        if (API_URL === "YOUR_WEB_APP_URL") {
+            countDisplay.textContent = "🔧";
+            countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
+        } else {
+            fetchCount();
         }
-
-        // ============================================================
-        //  ส่งข้อมูล (POST)
-        // ============================================================
-        form.addEventListener("submit", function(e) {
-            e.preventDefault();
-            hideMessage();
-
-            const agree = document.getElementById("agree");
-            if (!agree.checked) {
-                showMessage("กรุณายอมรับข้อกำหนดและเงื่อนไข", false);
-                return;
-            }
-
-            subBtn.disabled = true;
-            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
-
-            const data = new FormData(form);
-
-            fetch(API_URL, {
-                    method: "POST",
-                    body: data
-                })
-                .then(res => res.text())
-                .then(text => {
-                    if (text.includes("สำเร็จ") || text.includes("Success")) {
-                        showMessage("✅ " + text, true);
-                        form.reset();
-                        document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
-                        agree.checked = false;
-                        fetchCount();
-                    } else {
-                        showMessage("⚠️ " + text, false);
-                    }
-                })
-                .catch(err => {
-                    showMessage("❌ เกิดข้อผิดพลาด: " + err.message, false);
-                })
-                .finally(() => {
-                    subBtn.disabled = false;
-                    subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
-                });
-        });
-
-        // ============================================================
-        //  ดึงจำนวนข้อมูล (GET)
-        // ============================================================
-        function fetchCount() {
-            countMsg.textContent = "⏳ กำลังโหลด...";
-            countDisplay.textContent = "...";
-
-            fetch(API_URL)
-                .then(res => res.text())
-                .then(text => {
-                    const num = parseInt(text);
-                    if (!isNaN(num)) {
-                        countDisplay.textContent = num;
-                        countMsg.textContent = "✅ อัปเดตล่าสุด";
-                    } else {
-                        countDisplay.textContent = "❓";
-                        countMsg.textContent = text;
-                    }
-                })
-                .catch(err => {
-                    countDisplay.textContent = "❌";
-                    countMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-                });
-        }
-
-        checkBtn.addEventListener("click", fetchCount);
-
-        window.addEventListener("DOMContentLoaded", function() {
-            if (API_URL === "YOUR_WEB_APP_URL") {
-                countDisplay.textContent = "🔧";
-                countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
-            } else {
-                fetchCount();
-            }
-        });
-    </script>
+    });
+</script>
 </body>
 
 </html>
