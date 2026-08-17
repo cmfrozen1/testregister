@@ -134,17 +134,17 @@
                 <path d="M13 19l-1 1a3.5 3.5 0 01-5-5l1-1" />
             </svg>
 
-            <!-- โลโก้ LINE OA: โหลดแบบ dynamic จาก GAS backend (AccessToken) -->
+            <!-- โลโก้ LINE OA: โหลดจาก backend ตามบอทที่ใช้อยู่ (ไม่ฮาร์ดโค้ด)
+                 ระหว่างโหลด/โหลดไม่ได้ → แสดง placeholder "LINE" -->
             <div class="logo-circle brand">
-                <img id="oaLogo"
-                    src="https://profile.line-scdn.net/0hka7b5wI6NE4KGyfYJ99LGTZeOiN9NTIGcnksIHoZY3cmIidLYnQrfy9La3pyLnVPMHUrfCgaa3Yl"
-                    alt="โลโก้ LINE OA" style="width:100%; height:100%; object-fit:cover;"
+                <img id="oaLogo" src="" alt="โลโก้ LINE OA"
+                    style="display:none; width:100%; height:100%; object-fit:cover;"
                     onerror="showLogoFallback();">
-                <span id="oaLogoFallback" style="display:none;">บอตแจ้งผลการเรียน</span>
+                <span id="oaLogoFallback" style="display:flex;">LINE</span>
             </div>
         </div>
 
-        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name" id="oaName">ระบบของเรา</span> แล้ว</h1>
+        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name" id="oaName">LINE OA</span> แล้ว</h1>
         <p class="subtext">ท่านสามารถรับข่าวสารและบริการต่างๆ<br>ผ่านบัญชีที่ผูกไว้ได้ในตอนนี้</p>
 
         <div class="footer-links">
@@ -158,7 +158,7 @@
         //  ดึงชื่อ + โลโก้ LINE OA จาก Google Apps Script (AccessToken ใน backend)
         //  1) เปิดผ่าน GAS (?page=success) → ใช้ google.script.run
         //  2) เปิดแบบ static (netlify)      → ใช้ fetch ผ่าน CORS (GAS ตอบ ACAO: *)
-        //  ถ้าโหลดไม่ได้ → ใช้ค่าที่เขียนไว้ใน HTML (fallback)
+        //  โหลดไม่ได้/ยังไม่โหลด → แสดง placeholder "LINE" (ไม่มีค่าบอทฝังใน HTML)
         // ============================================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL Web App ที่ deploy จริง
 
@@ -169,17 +169,24 @@
             if (fb) fb.style.display = "flex";
         }
 
-        function applyProfile(profile) {
-            if (!profile) return;
+        function showLogo(profile) {
             const img = document.getElementById("oaLogo");
-            const name = document.getElementById("oaName");
-            if (img && profile.pictureUrl) {
+            const fb = document.getElementById("oaLogoFallback");
+            if (img && profile && profile.pictureUrl) {
                 img.onerror = showLogoFallback;
                 img.src = profile.pictureUrl;
+                img.style.display = "block";
+                if (fb) fb.style.display = "none";
             }
+        }
+
+        function applyProfile(profile) {
+            if (!profile) return;
+            const name = document.getElementById("oaName");
             if (name && profile.displayName) {
                 name.textContent = profile.displayName;
             }
+            showLogo(profile);
         }
 
         function loadOaProfile() {
