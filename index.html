@@ -467,7 +467,6 @@
 
         // ============================================================
         //  ดึง uid จาก query string (?uid=...)
-        //  แล้วใส่ลงฟอร์ม เพื่อให้ Apps Script รู้ว่า replyToken ของใคร
         // ============================================================
         function loadLineUserId() {
             const params = new URLSearchParams(window.location.search);
@@ -512,7 +511,6 @@
 
             const data = new FormData(form);
 
-            // ✅ ใช้ mode: 'cors' (default) เพื่อให้อ่าน Response ได้
             fetch(API_URL, {
                     method: "POST",
                     body: data
@@ -552,7 +550,6 @@
             countMsg.textContent = "⏳ กำลังโหลด...";
             countDisplay.textContent = "...";
 
-            // ✅ ใช้ mode: 'cors' (default)
             fetch(API_URL)
                 .then(res => res.text())
                 .then(text => {
