@@ -1,146 +1,158 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>เชื่อมต่อสำเร็จ</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เชื่อมต่อสำเร็จ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #ffffff;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 20px;
-  }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
 
-  .card {
-    max-width: 380px;
-    width: 100%;
-    text-align: center;
-  }
+        .card {
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+        }
 
-  /* แถวโลโก้: LINE — ไอคอนเชื่อมต่อ — โลโก้ของระบบเรา */
-  .logo-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 22px;
-    margin-bottom: 34px;
-  }
+        /* แถวโลโก้: LINE — ไอคอนเชื่อมต่อ — โลโก้ของระบบเรา */
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            margin-bottom: 34px;
+        }
 
-  .logo-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-    overflow: hidden;
-  }
+        .logo-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
 
-  .logo-circle.line {
-    background: #06c755;
-  }
+        .logo-circle.line {
+            background: #06c755;
+        }
 
-  .logo-circle.line svg {
-    width: 34px;
-    height: 34px;
-    fill: #ffffff;
-  }
+        .logo-circle.line svg {
+            width: 34px;
+            height: 34px;
+            fill: #ffffff;
+        }
 
-  .logo-circle.brand {
-    background: #f2f2f2;
-  }
+        .logo-circle.brand {
+            background: #f2f2f2;
+        }
 
-  /* 👇 ถ้ามีโลโก้จริงเป็นไฟล์ภาพ ให้แทน <span> ด้านล่างด้วย <img src="logo.png"> */
-  .logo-circle.brand span {
-    font-weight: 800;
-    font-size: 1rem;
-    color: #333;
-    letter-spacing: 0.5px;
-  }
+        /* 👇 ถ้ามีโลโก้จริงเป็นไฟล์ภาพ ให้แทน <span> ด้านล่างด้วย <img src="logo.png"> */
+        .logo-circle.brand span {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #333;
+            letter-spacing: 0.5px;
+        }
 
-  .link-icon {
-    width: 20px;
-    height: 20px;
-    color: #b5b5b5;
-  }
+        .link-icon {
+            width: 20px;
+            height: 20px;
+            color: #b5b5b5;
+        }
 
-  h1 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    line-height: 1.5;
-    margin-bottom: 10px;
-  }
+        h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
 
-  h1 .brand-name {
-    color: #06c755;
-  }
+        h1 .brand-name {
+            color: #06c755;
+        }
 
-  p.subtext {
-    font-size: 0.85rem;
-    color: #8b8b8b;
-    line-height: 1.6;
-  }
+        p.subtext {
+            font-size: 0.85rem;
+            color: #8b8b8b;
+            line-height: 1.6;
+        }
 
-  .footer-links {
-    margin-top: 60px;
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    font-size: 0.75rem;
-    color: #b0b0b0;
-  }
+        .footer-links {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            font-size: 0.75rem;
+            color: #b0b0b0;
+        }
 
-  .footer-links a {
-    color: #b0b0b0;
-    text-decoration: none;
-  }
+        .footer-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+        }
 
-  .footer-links a:hover {
-    text-decoration: underline;
-  }
-</style>
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
 
-  <div class="card">
-    <div class="logo-row">
-      <div class="logo-circle line">
-        <!-- LINE speech-bubble icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 5.85 2 10.6c0 4.24 3.53 7.79 8.31 8.47.32.07.76.21.87.49.1.25.06.65.03.9l-.14.86c-.04.25-.2.99.86.54 1.06-.45 5.73-3.37 7.82-5.77C21.24 13.99 22 12.38 22 10.6 22 5.85 17.52 2 12 2z"/>
-        </svg>
-      </div>
+    <div class="card">
+        <div class="logo-row">
+            <div class="logo-circle line">
+                <!-- LINE speech-bubble icon -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C6.48 2 2 5.85 2 10.6c0 4.24 3.53 7.79 8.31 8.47.32.07.76.21.87.49.1.25.06.65.03.9l-.14.86c-.04.25-.2.99.86.54 1.06-.45 5.73-3.37 7.82-5.77C21.24 13.99 22 12.38 22 10.6 22 5.85 17.52 2 12 2z" />
+                </svg>
+            </div>
 
-      <!-- ไอคอนเชื่อมต่อ (chain link) -->
-      <svg class="link-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M9 15l6-6"/>
-        <path d="M11 5l1-1a3.5 3.5 0 015 5l-1 1"/>
-        <path d="M13 19l-1 1a3.5 3.5 0 01-5-5l1-1"/>
-      </svg>
+            <!-- ไอคอนเชื่อมต่อ (chain link) -->
+            <svg class="link-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M9 15l6-6" />
+                <path d="M11 5l1-1a3.5 3.5 0 015 5l-1 1" />
+                <path d="M13 19l-1 1a3.5 3.5 0 01-5-5l1-1" />
+            </svg>
 
-      <!-- 👇 วาง pictureUrl ที่ได้จาก getLineBotProfile() ตรง src ด้านล่างนี้ -->
-      <div class="logo-circle brand">
-        <img src="https://profile.line-scdn.net/YOUR_OA_PICTURE_URL" alt="โลโก้ LINE OA" style="width:100%; height:100%; object-fit:cover;">
-      </div>
+            <!-- โลโก้จริงของ LINE OA (ดึงจาก getLineBotProfile()) -->
+            <div class="logo-circle brand">
+                <img src="https://profile.line-scdn.net/0hka7b5wI6NE4KGyfYJ99LGTZeOiN9NTIGcnksIHoZY3cmIidLYnQrfy9La3pyLnVPMHUrfCgaa3Yl"
+                    alt="โลโก้ LINE OA" style="width:100%; height:100%; object-fit:cover;"
+                    onerror="this.style.display='none'; this.parentNode.querySelector('span').style.display='flex';">
+                <span style="display:none;">บอตแจ้งผลการเรียน</span>
+            </div>
+        </div>
+
+        <!-- 👇 แก้ชื่อระบบ/ข้อความตรงนี้ -->
+        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name">ระบบของเรา</span> แล้ว</h1>
+        <p class="subtext">ท่านสามารถรับข่าวสารและบริการต่างๆ<br>ผ่านบัญชีที่ผูกไว้ได้ในตอนนี้</p>
+
+        <div class="footer-links">
+            <a href="#">ข้อตกลงการใช้บริการ</a>
+            <a href="#">นโยบายความเป็นส่วนตัว</a>
+        </div>
     </div>
-
-    <!-- 👇 แก้ชื่อระบบ/ข้อความตรงนี้ -->
-    <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name">ระบบของเรา</span> แล้ว</h1>
-    <p class="subtext">ท่านสามารถรับข่าวสารและบริการต่างๆ<br>ผ่านบัญชีที่ผูกไว้ได้ในตอนนี้</p>
-
-    <div class="footer-links">
-      <a href="#">ข้อตกลงการใช้บริการ</a>
-      <a href="#">นโยบายความเป็นส่วนตัว</a>
-    </div>
-  </div>
 
 </body>
+
 </html>
