@@ -17,8 +17,8 @@ const REPLY_INVITE_ON_FOLLOW = false; // 👈 หลักการคลิป:
 // หน้าจอ "เชื่อมต่อกับ LINE" เป็นบริการทางการของ LINE (LINE Login)
 // หลังเชื่อมต่อ LINE จะส่ง link event (มี replyToken) → บอท Reply บัตรสมาชิก (ฟรี)
 // ==============================================
-const LINE_LOGIN_CHANNEL_ID = "YOUR_LINE_LOGIN_CHANNEL_ID";     // 👈 LINE Developers → LINE Login channel → Channel ID
-const LINE_LOGIN_CHANNEL_SECRET = "YOUR_LINE_LOGIN_CHANNEL_SECRET"; // 👈 LINE Login channel → Channel Secret
+const LINE_LOGIN_CHANNEL_ID = "2000688983";                    // 👈 LINE Developers → LINE Login channel → Channel ID
+const LINE_LOGIN_CHANNEL_SECRET = "8d26d65c8c4152fef14d060541140cd3"; // 👈 LINE Login channel → Channel Secret
 const FORM_REDIRECT_URI = "https://testregister-ten.vercel.app/";   // 👈 ต้องตรงกับ redirect_uri ที่ลงทะเบียนใน LINE Login channel
 
 // ==============================================
