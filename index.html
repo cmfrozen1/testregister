@@ -460,7 +460,7 @@
         // ============================================================
         //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
         // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL จริง
 
         // ============================================================
         //  DOM References
@@ -598,7 +598,7 @@
         // ============================================================
         window.addEventListener("DOMContentLoaded", function() {
             loadLineUserId();
-            if (API_URL === "YOUR_WEB_APP_URL") {
+            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
                 countDisplay.textContent = "🔧";
                 countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
             } else {
