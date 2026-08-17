@@ -483,7 +483,6 @@
         //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
         // ============================================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL จริง
-        const SUCCESS_PAGE_URL = "success.html"; // 👈 เปลี่ยนเป็น URL หน้า "เชื่อมต่อสำเร็จ" (linked-success.html) ที่ deploy จริง
 
         // ============================================================
         //  🧪 เทคนิคจากคลิป (0:26): เชื่อมต่อกับ LINE ทางการ
@@ -588,20 +587,23 @@
                     console.log("📬 Response from Apps Script:", text);
 
                     if (text.includes("สำเร็จ")) {
-                        // ✅ เทคนิคจากคลิป (0:26): หลังลงทะเบียน ให้ผู้ใช้เปิดแชท LINE OA
+                        // ✅ เทคนิคจากคลิป: หลังลงทะเบียน → เปิดแชท LINE OA โดยตรง
                         //    แล้วพิมพ์ข้อความ → บอท Reply ด้วยบัตรสมาชิก (ฟรี ไม่ใช้ push)
+                        //    (ไม่มีหน้า success.html — ผลลัพธ์ยืนยันอยู่ใน LINE)
                         showMessage("✅ " + text, true);
 
-                        // แสดงปุ่มเปิด LINE เฉพาะเมื่อมี userId (มาจากลิงก์ ?uid=)
-                        if (openLineBtn && lineUserIdInput.value) {
-                            openLineBtn.href = oaChatLink;
-                            openLineBtn.style.display = "flex";
-                            if (openLineHint) openLineHint.style.display = "block";
+                        // เฉพาะเมื่อมี userId (มาจากลิงก์ ?uid=) → เด้งเข้าแชท LINE OA
+                        if (lineUserIdInput.value) {
+                            if (openLineBtn) {
+                                openLineBtn.href = oaChatLink;
+                                openLineBtn.style.display = "flex";
+                                if (openLineHint) openLineHint.style.display = "block";
+                            }
+                            // เปิดแชท LINE OA ให้เลย (เด้งกลับเข้าแอป LINE)
+                            setTimeout(function () {
+                                window.location.href = oaChatLink;
+                            }, 2000);
                         }
-
-                        setTimeout(function () {
-                            window.location.href = SUCCESS_PAGE_URL;
-                        }, 4000);
                     } else {
                         showMessage("⚠️ " + text, false);
                     }
