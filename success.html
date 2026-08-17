@@ -134,17 +134,17 @@
                 <path d="M13 19l-1 1a3.5 3.5 0 01-5-5l1-1" />
             </svg>
 
-            <!-- โลโก้จริงของ LINE OA (ดึงจาก getLineBotProfile()) -->
+            <!-- โลโก้ LINE OA: โหลดแบบ dynamic จาก GAS backend (AccessToken) -->
             <div class="logo-circle brand">
-                <img src="https://profile.line-scdn.net/0hka7b5wI6NE4KGyfYJ99LGTZeOiN9NTIGcnksIHoZY3cmIidLYnQrfy9La3pyLnVPMHUrfCgaa3Yl"
+                <img id="oaLogo"
+                    src="https://profile.line-scdn.net/0hka7b5wI6NE4KGyfYJ99LGTZeOiN9NTIGcnksIHoZY3cmIidLYnQrfy9La3pyLnVPMHUrfCgaa3Yl"
                     alt="โลโก้ LINE OA" style="width:100%; height:100%; object-fit:cover;"
-                    onerror="this.style.display='none'; this.parentNode.querySelector('span').style.display='flex';">
-                <span style="display:none;">บอตแจ้งผลการเรียน</span>
+                    onerror="showLogoFallback();">
+                <span id="oaLogoFallback" style="display:none;">บอตแจ้งผลการเรียน</span>
             </div>
         </div>
 
-        <!-- 👇 แก้ชื่อระบบ/ข้อความตรงนี้ -->
-        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name">ระบบของเรา</span> แล้ว</h1>
+        <h1>ตอนนี้ LINE เชื่อมต่อกับ<br><span class="brand-name" id="oaName">ระบบของเรา</span> แล้ว</h1>
         <p class="subtext">ท่านสามารถรับข่าวสารและบริการต่างๆ<br>ผ่านบัญชีที่ผูกไว้ได้ในตอนนี้</p>
 
         <div class="footer-links">
@@ -152,6 +152,54 @@
             <a href="#">นโยบายความเป็นส่วนตัว</a>
         </div>
     </div>
+
+    <script>
+        // ============================================================
+        //  ดึงชื่อ + โลโก้ LINE OA จาก Google Apps Script (AccessToken ใน backend)
+        //  1) เปิดผ่าน GAS (?page=success) → ใช้ google.script.run
+        //  2) เปิดแบบ static (netlify)      → ใช้ fetch ผ่าน CORS (GAS ตอบ ACAO: *)
+        //  ถ้าโหลดไม่ได้ → ใช้ค่าที่เขียนไว้ใน HTML (fallback)
+        // ============================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL Web App ที่ deploy จริง
+
+        function showLogoFallback() {
+            const img = document.getElementById("oaLogo");
+            const fb = document.getElementById("oaLogoFallback");
+            if (img) img.style.display = "none";
+            if (fb) fb.style.display = "flex";
+        }
+
+        function applyProfile(profile) {
+            if (!profile) return;
+            const img = document.getElementById("oaLogo");
+            const name = document.getElementById("oaName");
+            if (img && profile.pictureUrl) {
+                img.onerror = showLogoFallback;
+                img.src = profile.pictureUrl;
+            }
+            if (name && profile.displayName) {
+                name.textContent = profile.displayName;
+            }
+        }
+
+        function loadOaProfile() {
+            // เปิดผ่าน GAS → เรียก backend โดยตรง
+            if (typeof google !== "undefined" && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(applyProfile)
+                    .withFailureHandler(function () { /* ใช้ค่าใน HTML */ })
+                    .getBotProfile();
+                return;
+            }
+            // เปิดแบบ static → fetch ผ่าน CORS
+            fetch(API_URL + "?getProfile=1")
+                .then(function (r) { return r.json(); })
+                .then(applyProfile)
+                .catch(function () { /* ใช้ค่าใน HTML */ });
+        }
+
+        window.addEventListener("DOMContentLoaded", loadOaProfile);
+    </script>
 
 </body>
 
