@@ -13,13 +13,11 @@ const REPLY_INVITE_ON_FOLLOW = false; // 👈 หลักการคลิป:
                                       //     true  = ตอบคำเชิญเองตอนแอดเพื่อน (จะกิน replyToken — ไม่แนะนำ)
 
 // ==============================================
-// 🔗 LINE Login (Bot Link) — เชื่อมต่อกับ LINE ทางการ
-// หน้าจอ "เชื่อมต่อกับ LINE" เป็นบริการทางการของ LINE (LINE Login)
-// หลังเชื่อมต่อ LINE จะส่ง link event (มี replyToken) → บอท Reply บัตรสมาชิก (ฟรี)
+// 🔗 Messaging API Account Linking (linkToken) — ผูกบัญชี LINE ทางการ
+// 1) ออก linkToken: POST /bot/user/{userId}/linkToken (ฟรี ไม่ต้องมี LINE Login channel)
+// 2) ส่งลิงก์ access.line.me/dialog/bot/accountLink?linkToken=..&nonce=.. ให้ผู้ใช้ (ผ่าน Reply — ฟรี)
+// 3) ผู้ใช้กดยืนยัน → LINE ส่ง accountLink event (มี replyToken ใหม่) → Reply Flex Message บัตร (ฟรี)
 // ==============================================
-const LINE_LOGIN_CHANNEL_ID = "2000688983";                    // 👈 LINE Developers → LINE Login channel → Channel ID
-const LINE_LOGIN_CHANNEL_SECRET = "8d26d65c8c4152fef14d060541140cd3"; // 👈 LINE Login channel → Channel Secret
-const FORM_REDIRECT_URI = "https://testregister-ten.vercel.app/";   // 👈 ต้องตรงกับ redirect_uri ที่ลงทะเบียนใน LINE Login channel
 
 // ==============================================
 // doPost - รับข้อมูลทั้งจาก LINE Webhook และฟอร์ม HTML
@@ -105,24 +103,35 @@ function handleLineWebhook(e) {
           return;
         }
 
-        // ✅ ผู้ใช้เชื่อมต่อ LINE ทางการผ่าน LINE Login (Bot Link) — เก็บ replyToken ไว้
-        if (event.type === 'link') {
+        // ✅ ผู้ใช้ยืนยันการผูกบัญชี LINE แล้ว (accountLink event) → Reply Flex Message บัตร (ฟรี)
+        if (event.type === 'accountLink') {
           const replyToken = event.replyToken;
           const userId = event.source.userId;
-          Logger.log("🔗 ผู้ใช้เชื่อมต่อ LINE (link): " + userId);
+          const result = event.link && event.link.result;
+          const nonce = event.link && event.link.nonce;
+          Logger.log("🔗 accountLink event: " + JSON.stringify(event.link));
 
           const props = PropertiesService.getScriptProperties();
-          props.setProperty("token_" + userId, replyToken);
-          props.setProperty("ts_" + userId, String(Date.now()));
-
-          // ถ้ามีบัตรรอส่งอยู่ (ลงทะเบียนก่อน แล้วเพิ่งเชื่อมต่อ LINE) → Reply เลย (ฟรี)
-          const pendingReply = props.getProperty("pending_reply_" + userId);
-          if (pendingReply) {
-            replyMemberCardFlex(replyToken, JSON.parse(pendingReply));
-            props.deleteProperty("pending_reply_" + userId);
-            props.deleteProperty("token_" + userId);
-            props.deleteProperty("ts_" + userId);
-            Logger.log("📤 ส่งบัตรสมาชิกที่รออยู่ผ่าน link event (ฟรี)");
+          if (result === 'ok' && nonce) {
+            // ผูกสำเร็จ → หาข้อมูลบัตรจาก nonce ที่ออกตอนลงทะเบียน → Reply บัตรทันที (ฟรี)
+            const memberJson = props.getProperty("nonce_" + nonce);
+            if (memberJson) {
+              replyMemberCardFlex(replyToken, JSON.parse(memberJson));
+              props.deleteProperty("nonce_" + nonce);
+              props.deleteProperty("member_" + userId);
+              props.deleteProperty("token_" + userId);
+              props.deleteProperty("ts_" + userId);
+              Logger.log("📤 ผูกบัญชีสำเร็จ → ส่งบัตรสมาชิก (ฟรี)");
+            } else {
+              // ไม่มี nonce → ส่งบัตรจากข้อมูลที่เก็บไว้ (fallback)
+              const m = props.getProperty("member_" + userId);
+              if (m) {
+                replyMemberCardFlex(replyToken, JSON.parse(m));
+                props.deleteProperty("member_" + userId);
+              }
+            }
+          } else {
+            Logger.log("⚠️ ผูกบัญชีไม่สำเร็จ: " + result);
           }
           return;
         }
@@ -411,35 +420,44 @@ function handleFormSubmit(e) {
     };
 
     if (userId) {
-      // ✅ มี userId แล้ว → ใช้ replyToken ที่เก็บไว้ตอนแอดเพื่อน/เชื่อมต่อ LINE
-      //    Reply บัตรสมาชิกอัตโนมัติทันที (ฟรี ไม่เสียโควต้า push)
+      // ✅ ตามหลักการคลิป: ลงทะเบียน → ออก linkToken → ส่งลิงก์ผูกบัญชี LINE (Reply — ฟรี)
+      //    → ผู้ใช้กดยืนยัน → LINE ส่ง accountLink event → Reply Flex Message บัตรสมาชิก (ฟรี)
       const props = PropertiesService.getScriptProperties();
 
       // เก็บข้อมูลบัตรไว้ (fallback: ถ้า token หมดอายุ ผู้ใช้พิมพ์ข้อความในแชทเพื่อรับบัตร)
       props.setProperty("member_" + userId, JSON.stringify(member));
       Logger.log("💾 เก็บข้อมูลบัตรสมาชิกสำหรับ userId: " + userId);
 
-      const savedToken = props.getProperty("token_" + userId);
-      if (savedToken) {
-        const sent = replyMemberCardFlex(savedToken, member);
-        props.deleteProperty("token_" + userId);
-        props.deleteProperty("ts_" + userId);
-        if (sent) {
-          props.deleteProperty("member_" + userId); // ส่งสำเร็จ → ไม่ต้องส่งซ้ำ
-          message = "✅ บันทึกข้อมูลสำเร็จ — ส่งบัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)";
+      // 1) ออก linkToken (Messaging API — ฟรี ไม่ต้องมี LINE Login channel)
+      const linkToken = issueLinkToken(userId);
+      if (linkToken) {
+        // 2) สร้าง nonce + ลิงก์ผูกบัญชี LINE ทางการ
+        const nonce = Utilities.getUuid();
+        props.setProperty("nonce_" + nonce, JSON.stringify(member));
+        const linkUrl = "https://access.line.me/dialog/bot/accountLink?linkToken=" +
+          encodeURIComponent(linkToken) + "&nonce=" + encodeURIComponent(nonce);
+        Logger.log("🔗 ลิงก์ผูกบัญชี LINE: " + linkUrl);
+
+        // 3) ส่งข้อความ (Reply — ฟรี) พร้อมปุ่มไปหน้าผูกบัญชี โดยใช้ replyToken ที่เก็บตอนแอดเพื่อน
+        const savedToken = props.getProperty("token_" + userId);
+        if (savedToken) {
+          const sent = sendAccountLinkMessage(savedToken, linkUrl);
+          props.deleteProperty("token_" + userId);
+          props.deleteProperty("ts_" + userId);
+          if (sent) {
+            message = "✅ บันทึกข้อมูลสำเร็จ — เปิด LINE แล้วกดปุ่มยืนยันการผูกบัญชีเพื่อรับบัตรสมาชิก";
+          } else {
+            message = "✅ บันทึกข้อมูลสำเร็จ — replyToken หมดอายุแล้ว พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก";
+          }
         } else {
-          message = "✅ บันทึกข้อมูลสำเร็จ — replyToken หมดอายุแล้ว พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก";
+          message = "✅ บันทึกข้อมูลสำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
         }
       } else {
         message = "✅ บันทึกข้อมูลสำเร็จ — พิมพ์ข้อความในแชท LINE เพื่อรับบัตรสมาชิก (ฟรี ไม่เสียโควต้า)";
       }
     } else {
-      // ✅ ยังไม่เชื่อม LINE → เก็บข้อมูลรอไว้ แล้วเด้งไปหน้าจอ "เชื่อมต่อกับ LINE" ทางการ
-      //    พอเชื่อมต่อเสร็จ LINE ส่ง link event → GAS Reply บัตรสมาชิกให้ (ฟรี)
-      const props = PropertiesService.getScriptProperties();
-      props.setProperty("pending_" + state, JSON.stringify(member));
-      Logger.log("💾 เก็บข้อมูลรอเชื่อมต่อ LINE (state=" + state + ")");
-      message = "✅ บันทึกข้อมูลสำเร็จ — กรุณายืนยันการผูกบัญชี LINE เพื่อรับ Flex Message บัตรสมาชิก";
+      // ✅ ไม่มี userId (เปิดฟอร์มตรง ไม่ได้มาจากลิงก์ใน LINE) → ไม่สามารถออก linkToken ได้
+      message = "❌ กรุณาเปิดฟอร์มนี้จากลิงก์/ปุ่มในแชท LINE OA เพื่อรับบัตรสมาชิก";
     }
 
     return ContentService.createTextOutput(message + "\nSTATE:" + state);
@@ -724,82 +742,88 @@ function getLineBotProfile() {
 }
 
 // ==============================================
-// 🔗 LINE Login callback — แลก code → userId → Reply บัตรสมาชิก (ฟรี)
-// เรียกจาก index.html หลังผู้ใช้กด "เชื่อมต่อกับ LINE" (LINE Login ทางการ)
+// 🔗 Messaging API Account Linking — ออก linkToken + ส่งลิงก์ผูกบัญชี (Reply — ฟรี)
 // ==============================================
 
-function handleOAuthCallback(params) {
+/**
+ * ออก linkToken สำหรับผูกบัญชี LINE (Messaging API — ฟรี ไม่ต้องมี LINE Login channel)
+ * @param {string} userId - LINE userId ของผู้ใช้
+ * @return {string|null} linkToken หรือ null ถ้าไม่สำเร็จ
+ */
+function issueLinkToken(userId) {
+  const url = "https://api.line.me/v2/bot/user/" + encodeURIComponent(userId) + "/linkToken";
+  const options = {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + LINE_CHANNEL_ACCESS_TOKEN
+    },
+    muteHttpExceptions: true
+  };
+
   try {
-    const code = params.code;
-    const state = params.state;
-
-    if (!LINE_LOGIN_CHANNEL_ID || LINE_LOGIN_CHANNEL_ID.indexOf("YOUR_") === 0) {
-      return ContentService.createTextOutput("❌ ยังไม่ได้ตั้งค่า LINE_LOGIN_CHANNEL_ID / CHANNEL_SECRET");
-    }
-
-    // 1) แลก code → access token + id_token
-    const tokenRes = UrlFetchApp.fetch("https://api.line.me/oauth2/v2.1/token", {
-      method: "post",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      payload: {
-        grant_type: "authorization_code",
-        code: code,
-        redirect_uri: FORM_REDIRECT_URI,
-        client_id: LINE_LOGIN_CHANNEL_ID,
-        client_secret: LINE_LOGIN_CHANNEL_SECRET
-      },
-      muteHttpExceptions: true
-    });
-    const tokenData = JSON.parse(tokenRes.getContentText());
-    if (!tokenData.id_token) {
-      Logger.log("❌ แลก token ไม่สำเร็จ: " + tokenRes.getContentText());
-      return ContentService.createTextOutput("❌ เชื่อมต่อ LINE ไม่สำเร็จ: " + (tokenData.error_description || "เกิดข้อผิดพลาด"));
-    }
-
-    // 2) อ่าน userId จาก id_token (payload ส่วนกลาง)
-    const idTokenPayload = JSON.parse(base64UrlDecode(tokenData.id_token.split(".")[1]));
-    const userId = idTokenPayload.sub;
-    Logger.log("🔗 LINE Login สำเร็จ userId: " + userId + " state: " + state);
-
-    const props = PropertiesService.getScriptProperties();
-
-    // 3) หาข้อมูลการลงทะเบียนที่รอเชื่อมต่อ (ผูกด้วย state)
-    const pendingJson = props.getProperty("pending_" + state);
-    if (!pendingJson) {
-      return ContentService.createTextOutput("❌ ไม่พบข้อมูลการลงทะเบียนที่รอเชื่อมต่อ (state ไม่ตรง)");
-    }
-    const member = JSON.parse(pendingJson);
-    props.deleteProperty("pending_" + state);
-
-    // 4) ใช้ replyToken จาก link event (เก็บไว้ตอนเชื่อมต่อ) Reply บัตรสมาชิก (ฟรี ไม่เสียโควต้า)
-    const savedToken = props.getProperty("token_" + userId);
-    if (savedToken) {
-      const sent = replyMemberCardFlex(savedToken, member);
-      props.deleteProperty("token_" + userId);
-      props.deleteProperty("ts_" + userId);
-      if (sent) {
-        props.deleteProperty("member_" + userId);
-        return ContentService.createTextOutput("✅ ผูกบัญชี LINE สำเร็จ — ส่ง Flex Message บัตรสมาชิกไปยัง LINE แล้ว (ฟรี ไม่เสียโควต้า)");
-      }
-      return ContentService.createTextOutput("⚠️ ผูกบัญชี LINE สำเร็จ แต่ replyToken หมดอายุแล้ว — พิมพ์ข้อความในแชท LINE เพื่อรับบัตร");
-    }
-
-    // ไม่มี token (link event ยังมาไม่ถึง/หมดอายุ) → เก็บไว้รอ link event หรือพิมพ์ข้อความ (fallback)
-    props.setProperty("pending_reply_" + userId, JSON.stringify(member));
-    return ContentService.createTextOutput("✅ ผูกบัญชี LINE สำเร็จ — กำลังส่ง Flex Message บัตรสมาชิก...");
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    Logger.log("🔗 linkToken Response: " + response.getContentText());
+    return data.linkToken || null;
   } catch (error) {
-    Logger.log("❌ handleOAuthCallback Error: " + error.message);
-    return ContentService.createTextOutput("❌ เกิดข้อผิดพลาด: " + error.message);
+    Logger.log("❌ ออก linkToken ล้มเหลว: " + error.message);
+    return null;
   }
 }
 
 /**
- * ถอดรหัส base64url (payload ของ id_token)
+ * ส่งข้อความ (Reply API — ฟรี) พร้อมปุ่มไปหน้าผูกบัญชี LINE ทางการ
+ * @param {string} replyToken - replyToken ที่เก็บตอนแอดเพื่อน
+ * @param {string} linkUrl    - https://access.line.me/dialog/bot/accountLink?linkToken=..&nonce=..
+ * @return {boolean} สำเร็จหรือไม่
  */
-function base64UrlDecode(str) {
-  const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
-  return Utilities.newBlob(Utilities.base64Decode(b64 + pad)).getDataAsString();
+function sendAccountLinkMessage(replyToken, linkUrl) {
+  if (!replyToken) {
+    Logger.log("⚠️ ไม่มี replyToken สำหรับส่งลิงก์ผูกบัญชี");
+    return false;
+  }
+
+  const payload = {
+    replyToken: replyToken,
+    messages: [{
+      type: "template",
+      altText: "ยืนยันการผูกบัญชี LINE เพื่อรับบัตรสมาชิก",
+      template: {
+        type: "buttons",
+        text: "🔗 ยืนยันการผูกบัญชี LINE เพื่อรับบัตรสมาชิกของคุณ",
+        actions: [{
+          type: "uri",
+          label: "ยืนยันการผูกบัญชี LINE",
+          uri: linkUrl
+        }]
+      }
+    }]
+  };
+
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + LINE_CHANNEL_ACCESS_TOKEN
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch("https://api.line.me/v2/bot/message/reply", options);
+    const result = response.getContentText();
+    Logger.log("📬 Reply (ลิงก์ผูกบัญชี) Response: " + result);
+    if (result.trim() !== "{}" && result.indexOf("\"message\"") !== -1) {
+      Logger.log("❌ ส่งลิงก์ผูกบัญชีล้มเหลว: " + result);
+      return false;
+    }
+    Logger.log("✅ ส่งลิงก์ผูกบัญชี LINE สำเร็จ (ฟรี)");
+    return true;
+  } catch (error) {
+    Logger.log("❌ ส่งลิงก์ผูกบัญชี LINE ล้มเหลว: " + error.message);
+    return false;
+  }
 }
 
 // ==============================================
@@ -829,11 +853,6 @@ function getBotProfile() {
 
 function doGet(e) {
   try {
-    // ✅ LINE Login callback: แลก code → userId → Reply บัตรสมาชิก (ฟรี ไม่ใช้ push)
-    if (e && e.parameter && e.parameter.completeLink === "1") {
-      return handleOAuthCallback(e.parameter);
-    }
-
     // API: ดึงโปรไฟล์ LINE OA (ตอบเป็น JSON สำหรับหน้า static)
     if (e && e.parameter && e.parameter.getProfile === "1") {
       const profile = getBotProfile();

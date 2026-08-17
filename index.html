@@ -505,11 +505,10 @@
         const LINE_OA_LINK = "https://line.me/R/ti/p/@042shrup"; // 👈 fallback ถ้าดึง basicId อัตโนมัติไม่ได้
 
         // ============================================================
-        //  🔗 LINE Login (Bot Link) — เชื่อมต่อกับ LINE ทางการ
-        //  หน้าจอ "เชื่อมต่อกับ LINE" เป็นบริการทางการของ LINE (LINE Login)
+        //  🔗 Messaging API Account Linking (linkToken) — ผูกบัญชี LINE ทางการ
+        //  หลังลงทะเบียน GAS จะออก linkToken + ส่งข้อความพร้อมปุ่ม "ยืนยันการผูกบัญชี LINE"
+        //  ไปในแชท LINE OA (Reply — ฟรี) → ผู้ใช้กดยืนยัน → รับ Flex Message บัตรสมาชิก (ฟรี)
         // ============================================================
-        const LINE_LOGIN_CHANNEL_ID = "2000688983"; // 👈 LINE Developers → LINE Login channel → Channel ID
-        const FORM_REDIRECT_URI = window.location.origin + window.location.pathname; // ต้องตรงกับที่ลงทะเบียนใน LINE Login
         const SYSTEM_NAME = "ระบบสมาชิก"; // 👈 ชื่อระบบ (ในคลิปใช้ "BMI") — แสดงบนหน้า "เชื่อมต่อแล้ว"
 
         // ============================================================
@@ -563,61 +562,6 @@
         }
 
         // ============================================================
-        //  🔗 LINE Login (Bot Link) — สร้าง URL + จัดการ callback
-        //  หน้าจอ "เชื่อมต่อกับ LINE" เป็นบริการทางการของ LINE
-        // ============================================================
-        function getLineLoginUrl(state) {
-            const params = new URLSearchParams({
-                response_type: "code",
-                client_id: LINE_LOGIN_CHANNEL_ID,
-                redirect_uri: FORM_REDIRECT_URI,
-                state: state,
-                scope: "openid profile",
-                nonce: state, // ใช้ state เป็น nonce (สุ่มแล้ว)
-                botLink: "friend"
-            });
-            return "https://access.line.me/oauth2/v2.1/authorize?" + params.toString();
-        }
-
-        function handleOAuthCallback() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get("code");
-            const state = params.get("state");
-            if (!code || !state) return;
-
-            // เรียก GAS เพื่อแลก code → ส่ง Flex Message บัตรสมาชิก (ฟรี ไม่ใช้ push)
-            showMessage("⏳ กำลังยืนยันการผูกบัญชี LINE...", true, true);
-            fetch(API_URL + "?completeLink=1&code=" + encodeURIComponent(code) + "&state=" + encodeURIComponent(state))
-                .then(function (res) { return res.text(); })
-                .then(function (text) {
-                    console.log("📬 completeLink Response:", text);
-                    if (text.includes("สำเร็จ")) {
-                        showMessage("✅ " + text, true);
-
-                        // ✅ ตามคลิป: ขึ้นหน้าจอ "ตอนนี้ LINE เชื่อมต่อกับ [ระบบ] แล้ว"
-                        if (connectedTitle) {
-                            connectedTitle.innerHTML = "ตอนนี้ LINE เชื่อมต่อกับ <span style=\"color:#06c755;\">" + SYSTEM_NAME + "</span> แล้ว";
-                        }
-                        if (connectedPanel) {
-                            form.style.display = "none";
-                            connectedPanel.style.display = "block";
-                        }
-
-                        if (openLineBtn) {
-                            openLineBtn.href = oaChatLink;
-                            openLineBtn.style.display = "flex";
-                            if (openLineHint) openLineHint.style.display = "block";
-                        }
-                    } else {
-                        showMessage("⚠️ " + text, false);
-                    }
-                })
-                .catch(function (err) {
-                    showMessage("❌ " + err.message, false);
-                });
-        }
-
-        // ============================================================
         //  Helper: แสดงข้อความ
         // ============================================================
         function showMessage(text, isSuccess = true, isLoading = false) {
@@ -665,17 +609,25 @@
                     console.log("📬 Response from Apps Script:", text);
 
                     if (text.includes("สำเร็จ")) {
-                        // แยก state (ใช้เชื่อมต่อ LINE) ออกจากข้อความ
+                        // แยก state (เผื่อใช้ในอนาคต) ออกจากข้อความ
                         const parts = text.split("\nSTATE:");
                         const cleanText = parts[0];
-                        const state = parts[1];
 
-                        // ✅ ปุ่มลงทะเบียน = ปุ่มยืนยันผูกบัญชี LINE → เด้งไปหน้าจอ LINE Login ทางการ
-                        //    ผูกสำเร็จ LINE ส่ง link event → GAS Reply Flex Message บัตร (ฟรี ไม่ใช้ push)
-                        showMessage("✅ " + cleanText + " — กำลังไปที่หน้าจอยืนยันการผูกบัญชี LINE...", true);
-                        setTimeout(function () {
-                            window.location.href = getLineLoginUrl(state);
-                        }, 1500);
+                        // ✅ ตามหลักการคลิป: GAS ออก linkToken + ส่งข้อความพร้อมปุ่ม
+                        //    "ยืนยันการผูกบัญชี LINE" ไปในแชท LINE OA แล้ว (Reply — ฟรี)
+                        //    ผู้ใช้กดปุ่ม → ยืนยันผูกบัญชี → LINE ส่ง accountLink event →
+                        //    GAS Reply Flex Message บัตรสมาชิกให้ทันที (ฟรี ไม่ใช้ push)
+                        if (lineUserIdInput.value) {
+                            showMessage("✅ " + cleanText, true);
+
+                            if (openLineBtn) {
+                                openLineBtn.href = oaChatLink;
+                                openLineBtn.style.display = "flex";
+                                if (openLineHint) openLineHint.style.display = "block";
+                            }
+                        } else {
+                            showMessage("✅ " + cleanText, true);
+                        }
                     } else {
                         showMessage("⚠️ " + text, false);
                     }
@@ -725,7 +677,6 @@
         window.addEventListener("DOMContentLoaded", function () {
             loadLineUserId();
             loadOaChatLink(); // 🔗 ดึงลิงก์เปิดแชท LINE OA อัตโนมัติ (ถ้าดึงได้)
-            handleOAuthCallback(); // 🔗 ถ้ากลับจาก LINE Login (มี code+state) → แลก code + ส่งบัตร
             if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
                 countDisplay.textContent = "🔧";
                 countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
