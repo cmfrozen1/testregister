@@ -278,6 +278,17 @@
             font-size: 1.6rem;
         }
 
+        .msg-box.loading {
+            background: #eef6f8;
+            color: #1c4f5e;
+            border-color: #1f7a8c;
+        }
+
+        .msg-box.loading i {
+            color: #1f7a8c;
+            font-size: 1.6rem;
+        }
+
         .line-hint {
             margin-top: 14px;
             padding: 10px 18px;
@@ -483,9 +494,14 @@
         // ============================================================
         //  Helper: แสดงข้อความ
         // ============================================================
-        function showMessage(text, isSuccess = true) {
-            msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
-            msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+        function showMessage(text, isSuccess = true, isLoading = false) {
+            if (isLoading) {
+                msgBox.className = "msg-box show loading";
+                msgIcon.className = "fas fa-spinner fa-spin";
+            } else {
+                msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
+                msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+            }
             msgText.textContent = text;
         }
 
@@ -507,7 +523,10 @@
             }
 
             subBtn.disabled = true;
-            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
+            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+            // ✅ แสดงข้อความกำลังเชื่อมต่อ LINE OA
+            showMessage("⏳ กำลังบันทึกข้อมูลและเชื่อมต่อ LINE OA...", true, true);
 
             const data = new FormData(form);
 
@@ -519,11 +538,13 @@
                 .then(text => {
                     console.log("📬 Response from Apps Script:", text);
 
-                    if (text.includes("สำเร็จ") || text.includes("Success")) {
-                        showMessage("✅ " + text, true);
-                        if (lineUserIdInput.value) {
-                            showMessage("✅ " + text + " กลับไปที่แชท LINE เพื่อดูข้อความยืนยัน", true);
+                    if (text.includes("สำเร็จ")) {
+                        if (text.includes("LINE")) {
+                            showMessage("✅ " + text, true);
+                        } else {
+                            showMessage("✅ " + text + " (ไม่พบ userId จาก LINE)", true);
                         }
+                        
                         form.reset();
                         lineUserIdInput.value = new URLSearchParams(window.location.search).get("uid") || "";
                         document.querySelector('input[name="gender"][value="ไม่ระบุ"]').checked = true;
