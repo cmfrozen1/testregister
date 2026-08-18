@@ -439,10 +439,10 @@
 
     <script>
         // ============================================================
-        //  ตั้งค่า: ใส่ URL ของ Web App (เฉพาะกรณีโฮสต์ฟอร์มไว้นอก Google Apps Script)
-        //  ถ้าฟอร์มถูก serve จาก doGet ของโปรเจกต์นี้เอง ไม่ต้องใส่ (ใช้ google.script.run)
+        //  ตั้งค่า: URL ของ Web App (GAS) ที่ใช้เป็น API endpoint
+        //  ต้องใส่เสมอ เพราะ GAS ไม่มี doGet แล้ว (หน้าเว็บนี้โฮสต์ที่อื่น)
         // ============================================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // เช่น "https://script.google.com/macros/s/XXXX/exec"
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
         let regToken = '';
         let regOaLink = '';
@@ -458,42 +458,42 @@
         const linkBtn = document.getElementById("btnLink");
 
         // ============================================================
-        //  เรียกฟังก์ชันฝั่งเซิร์ฟเวอร์: google.script.run (หน้า serve จาก GAS)
-        //  หรือ JSONP ผ่าน WEB_APP_URL (กรณีโฮสต์ฟอร์มที่อื่น)
+        //  เรียก API ฝั่งเซิร์ฟเวอร์: POST FormData ไปที่ WEB_APP_URL
+        //  (method: clientRegister -> action=register, clientRequestLink -> action=requestLink)
         // ============================================================
         function callServer(method, args, onSuccess, onFailure) {
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(onSuccess)
-                    .withFailureHandler(function (err) {
-                        onFailure(new Error(String(err)));
-                    })[method].apply(null, args);
+            if (!WEB_APP_URL) {
+                onFailure(new Error('กรุณาตั้งค่า WEB_APP_URL (URL ของ Web App)'));
                 return;
             }
 
-            if (WEB_APP_URL) {
-                const action = (method === 'clientRegister') ? 'register' : 'requestLink';
-                const cbName = '__jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-                const params = { action: action, callback: cbName };
-                if (method === 'clientRegister') {
-                    params.phone = args[0];
-                    params.birthday = args[1];
-                } else {
-                    params.token = args[0];
-                }
-                const qs = Object.keys(params)
-                    .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
-                    .join('&');
-                const script = document.createElement('script');
-                const cleanup = function () { delete window[cbName]; script.remove(); };
-                window[cbName] = function (data) { cleanup(); onSuccess(data); };
-                script.src = WEB_APP_URL + '?' + qs;
-                script.onerror = function () { cleanup(); onFailure(new Error('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้')); };
-                document.head.appendChild(script);
-                return;
+            // ส่งแบบ FormData (multipart) -> เป็น simple request ไม่โดน CORS preflight
+            // (GAS ไม่คืน CORS header ดังนั้นส่ง JSON แบบ application/json จะถูกบล็อก)
+            const fd = new FormData();
+            if (method === 'clientRegister') {
+                fd.append('action', 'register');
+                fd.append('phone', args[0]);
+                fd.append('birthday', args[1]);
+            } else {
+                fd.append('action', 'requestLink');
+                fd.append('token', args[0]);
             }
 
-            onFailure(new Error('ต้องรันบน Google Apps Script หรือตั้งค่า WEB_APP_URL'));
+            fetch(WEB_APP_URL, { method: 'POST', body: fd })
+                .then(function (res) { return res.text(); })
+                .then(function (text) {
+                    let res;
+                    try {
+                        res = JSON.parse(text);
+                    } catch (err) {
+                        onFailure(new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง: ' + text.slice(0, 100)));
+                        return;
+                    }
+                    onSuccess(res);
+                })
+                .catch(function (err) {
+                    onFailure(err);
+                });
         }
 
         // ============================================================
