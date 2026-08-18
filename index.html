@@ -135,7 +135,6 @@
             color: #1f7a8c;
         }
 
-        /* สถานะของ input */
         .form-group input.valid {
             border-color: #28a745;
             background: #f0fff4;
@@ -268,6 +267,17 @@
             font-size: 1.6rem;
         }
 
+        .msg-box.info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border-color: #2196f3;
+        }
+
+        .msg-box.info i {
+            color: #2196f3;
+            font-size: 1.6rem;
+        }
+
         .msg-box.loading {
             background: #eef6f8;
             color: #1c4f5e;
@@ -346,6 +356,26 @@
             word-break: break-all;
         }
 
+        .step-hint .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .step-hint .steps-list li {
+            padding: 5px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .step-hint .steps-list li i {
+            color: #1f7a8c;
+            margin-top: 3px;
+            width: 20px;
+            text-align: center;
+        }
+
         .divider {
             text-align: center;
             color: #8aa8b2;
@@ -373,6 +403,27 @@
 
         .footer i {
             color: #1f7a8c;
+        }
+
+        .auto-check-timer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6f8f9a;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .auto-check-timer.show {
+            display: block;
+        }
+
+        .auto-check-timer i {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 550px) {
@@ -439,6 +490,26 @@
             </div>
 
             <div class="step-hint">
+                <b>ขั้นตอนการยืนยันตัวตน:</b>
+                <ul class="steps-list">
+                    <li>
+                        <i class="fas fa-copy"></i>
+                        <span><b>ขั้นตอนที่ 1:</b> คัดลอกรหัสยืนยันด้านล่าง</span>
+                    </li>
+                    <li>
+                        <i class="fab fa-line"></i>
+                        <span><b>ขั้นตอนที่ 2:</b> กดปุ่ม "เปิดแชทกับ LINE OA"</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-paper-plane"></i>
+                        <span><b>ขั้นตอนที่ 3:</b> ส่งข้อความยืนยันไปในแชท LINE</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span><b>ขั้นตอนที่ 4:</b> กลับมากดปุ่ม "ตรวจสอบสถานะ" ด้านล่าง</span>
+                    </li>
+                </ul>
+
                 <b>รหัสยืนยันของคุณ:</b>
                 <div class="token-box">
                     <span class="token" id="tokenDisplay">-</span>
@@ -446,7 +517,8 @@
                         <i class="fas fa-copy"></i> คัดลอก
                     </button>
                 </div>
-                <div>เปิดแชทกับ LINE OA แล้วส่งข้อความนี้ เพื่อยืนยันตัวตน:</div>
+                
+                <div>ส่งข้อความนี้ไปในแชท LINE OA:</div>
                 <code id="confirmMessage">ยืนยันสมาชิก XXXXXXXX</code>
             </div>
 
@@ -454,11 +526,15 @@
                 <i class="fab fa-line"></i> เปิดแชทกับ LINE OA
             </a>
 
-            <div class="divider">ขั้นตอนต่อไป</div>
+            <div class="divider">หรือ</div>
 
             <button type="button" id="btnLink" class="btn btn-outline" onclick="requestLinkAccount()">
-                <i class="fas fa-link"></i> ยืนยันผูกบัญชีสมาชิก LINE
+                <i class="fas fa-link"></i> ตรวจสอบสถานะ / ผูกบัญชี LINE
             </button>
+
+            <div class="auto-check-timer" id="autoCheckTimer">
+                <i class="fas fa-sync-alt"></i> กำลังตรวจสอบสถานะอัตโนมัติ...
+            </div>
 
             <div id="linkMsg" class="msg-box">
                 <i id="linkMsgIcon" class="fas fa-info-circle"></i>
@@ -480,7 +556,8 @@
         let regToken = '';
         let regOaLink = '';
         let regMessage = '';
-        let currentYear = new Date().getFullYear();
+        let autoCheckInterval = null;
+        let isAutoChecking = false;
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -494,6 +571,7 @@
         const formErrorText = document.getElementById("formErrorText");
         const phoneHint = document.getElementById("phoneHint");
         const birthdayHint = document.getElementById("birthdayHint");
+        const autoCheckTimer = document.getElementById("autoCheckTimer");
 
         // ============================================================
         //  ตั้งค่า max date สำหรับวันเกิด (วันนี้)
@@ -504,7 +582,6 @@
         //  ตรวจสอบเบอร์โทรศัพท์
         // ============================================================
         function validatePhone(phone) {
-            // รองรับรูปแบบ: 0812345678, 081-234-5678, +66812345678
             const phoneRegex = /^(\+?66|0)\d{8,9}$/;
             const cleanPhone = phone.replace(/[\s-]/g, '');
             return phoneRegex.test(cleanPhone);
@@ -514,7 +591,6 @@
         //  ตรวจสอบวันเกิด
         // ============================================================
         function validateBirthday(birthday) {
-            // ตรวจสอบว่ามีการกรอกวันเกิดหรือไม่
             if (!birthday) {
                 return {
                     valid: false,
@@ -527,7 +603,6 @@
             today.setHours(0, 0, 0, 0);
             birthDate.setHours(0, 0, 0, 0);
 
-            // ตรวจสอบว่าวันเกิดไม่ใช่ในอนาคต
             if (birthDate > today) {
                 return {
                     valid: false,
@@ -535,7 +610,6 @@
                 };
             }
 
-            // คำนวณอายุ
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
             const dayDiff = today.getDate() - birthDate.getDate();
@@ -544,7 +618,6 @@
                 age--;
             }
 
-            // ตรวจสอบอายุขั้นต่ำ (ต้องมีอายุ 1 ปีขึ้นไป)
             if (age < 1) {
                 return {
                     valid: false,
@@ -552,7 +625,6 @@
                 };
             }
 
-            // ตรวจสอบอายุสูงสุด
             if (age > 120) {
                 return {
                     valid: false,
@@ -560,7 +632,6 @@
                 };
             }
 
-            // ตรวจสอบปีเกิดขั้นต่ำ
             const minYear = 1900;
             if (birthDate.getFullYear() < minYear) {
                 return {
@@ -624,10 +695,8 @@
             const phone = document.getElementById("phone").value.trim();
             const birthday = document.getElementById("birthday").value;
 
-            // ซ่อน error เก่า
             hideFormError();
 
-            // ตรวจสอบเบอร์โทรศัพท์
             if (!phone) {
                 showFormError('กรุณากรอกเบอร์โทรศัพท์');
                 document.getElementById("phone").focus();
@@ -642,7 +711,6 @@
                 return;
             }
 
-            // ตรวจสอบวันเกิด
             const birthdayValidation = validateBirthday(birthday);
             if (!birthdayValidation.valid) {
                 showFormError(birthdayValidation.message);
@@ -650,9 +718,6 @@
                 setInputStatus(document.getElementById("birthday"), 'invalid');
                 return;
             }
-
-            // แสดงอายุที่คำนวณได้
-            console.log('อายุ: ' + birthdayValidation.age + ' ปี');
 
             subBtn.disabled = true;
             subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
@@ -677,6 +742,9 @@
                         hideLinkStatus();
                         step1.classList.remove('show');
                         step2.classList.add('show');
+                        
+                        // เริ่มตรวจสอบสถานะอัตโนมัติ
+                        startAutoCheck();
                     } else {
                         showFormError((res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
                     }
@@ -689,7 +757,7 @@
         });
 
         // ============================================================
-        //  ขั้นตอนที่ 2: ขอผูกบัญชี LINE
+        //  ตรวจสอบสถานะ / ขอผูกบัญชี LINE
         // ============================================================
         function requestLinkAccount() {
             if (!regToken) {
@@ -703,7 +771,7 @@
             callServer('clientRequestLink', [regToken],
                 function(res) {
                     linkBtn.disabled = false;
-                    linkBtn.innerHTML = '<i class="fas fa-link"></i> ยืนยันผูกบัญชีสมาชิก LINE';
+                    linkBtn.innerHTML = '<i class="fas fa-link"></i> ตรวจสอบสถานะ / ผูกบัญชี LINE';
 
                     if (!res) {
                         showLinkStatus('error', 'เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองอีกครั้ง');
@@ -711,19 +779,28 @@
                     }
 
                     if (res.status === 'ok' && res.accountLinkUrl) {
-                        showLinkStatus('success', 'กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
+                        // พบการยืนยันแล้ว - หยุดตรวจสอบอัตโนมัติ
+                        stopAutoCheck();
+                        showLinkStatus('success', 'พบการยืนยันแล้ว! กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
                         setTimeout(function() {
                             window.location.href = res.accountLinkUrl;
-                        }, 1000);
+                        }, 1500);
                     } else if (res.status === 'needChat') {
+                        // ยังไม่พบการยืนยัน
                         if (res.oaLink) {
                             regOaLink = res.oaLink;
                             document.getElementById("btnOpenChat").href = res.oaLink;
                         }
-                        showLinkStatus('warning',
-                            'ยังไม่พบการยืนยันจาก LINE กรุณากด "เปิดแชทกับ LINE OA" แล้วส่งข้อความยืนยันให้เรียบร้อย จากนั้นกดปุ่มนี้อีกครั้ง');
+                        showLinkStatus('warning', 
+                            'ยังไม่พบการยืนยันจาก LINE กรุณาทำตามขั้นตอนด้านบนให้ครบถ้วน แล้วกดตรวจสอบอีกครั้ง');
+                        
+                        // เริ่มตรวจสอบอัตโนมัติถ้ายังไม่เริ่ม
+                        if (!isAutoChecking) {
+                            startAutoCheck();
+                        }
                     } else if (res.status === 'notfound') {
-                        showLinkStatus('error', 'ไม่พบข้อมูลการลงทะเบียนนี้ในระบบ');
+                        showLinkStatus('error', 'ไม่พบข้อมูลการลงทะเบียนนี้ในระบบ กรุณาลงทะเบียนใหม่');
+                        stopAutoCheck();
                     } else if (res.status === 'error') {
                         showLinkStatus('error', res.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
                     } else {
@@ -732,8 +809,56 @@
                 },
                 function(err) {
                     linkBtn.disabled = false;
-                    linkBtn.innerHTML = '<i class="fas fa-link"></i> ยืนยันผูกบัญชีสมาชิก LINE';
+                    linkBtn.innerHTML = '<i class="fas fa-link"></i> ตรวจสอบสถานะ / ผูกบัญชี LINE';
                     showLinkStatus('error', err.message);
+                });
+        }
+
+        // ============================================================
+        //  ตรวจสอบสถานะอัตโนมัติ (ทุก 30 วินาที)
+        // ============================================================
+        function startAutoCheck() {
+            if (isAutoChecking) return;
+            
+            isAutoChecking = true;
+            autoCheckTimer.classList.add('show');
+            
+            // ตรวจสอบครั้งแรกทันที
+            checkStatusSilently();
+            
+            // ตั้งเวลาตรวจสอบทุก 30 วินาที
+            autoCheckInterval = setInterval(function() {
+                checkStatusSilently();
+            }, 30000); // 30 วินาที
+        }
+
+        function stopAutoCheck() {
+            isAutoChecking = false;
+            autoCheckTimer.classList.remove('show');
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+                autoCheckInterval = null;
+            }
+        }
+
+        function checkStatusSilently() {
+            if (!regToken) return;
+            
+            callServer('clientCheckStatus', [regToken],
+                function(res) {
+                    if (res && res.status === 'ok') {
+                        // พบการยืนยันแล้ว
+                        stopAutoCheck();
+                        showLinkStatus('success', 'ตรวจพบการยืนยันจาก LINE! ระบบกำลังดำเนินการต่อ...');
+                        setTimeout(function() {
+                            requestLinkAccount();
+                        }, 1000);
+                    }
+                    // ถ้ายังไม่พบ (needChat) - เงียบไว้และรอตรวจสอบรอบถัดไป
+                },
+                function(err) {
+                    // เงียบไว้เมื่อมีข้อผิดพลาด - จะลองใหม่ในรอบถัดไป
+                    console.log('Auto-check error:', err.message);
                 });
         }
 
@@ -749,6 +874,9 @@
                 const old = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
                 setTimeout(function() { btn.innerHTML = old; }, 1500);
+                
+                // แสดงข้อความแนะนำ
+                showLinkStatus('info', 'คัดลอกรหัสแล้ว! กด "เปิดแชทกับ LINE OA" เพื่อส่งข้อความยืนยัน');
             }
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -781,6 +909,8 @@
                 linkMsgIcon.className = 'fas fa-exclamation-triangle';
             } else if (type === 'success') {
                 linkMsgIcon.className = 'fas fa-check-circle';
+            } else if (type === 'info') {
+                linkMsgIcon.className = 'fas fa-info-circle';
             } else {
                 linkMsgIcon.className = 'fas fa-info-circle';
             }
@@ -828,7 +958,6 @@
         //  Event Listeners สำหรับการตรวจสอบแบบ Real-time
         // ============================================================
         
-        // ตรวจสอบเบอร์โทรศัพท์แบบ real-time
         document.getElementById('phone').addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^\d]/g, '');
             if (value.length > 10) {
@@ -851,7 +980,6 @@
             }
         });
 
-        // ตรวจสอบวันเกิดแบบ real-time
         document.getElementById('birthday').addEventListener('change', function(e) {
             const birthday = e.target.value;
             const validation = validateBirthday(birthday);
@@ -865,13 +993,17 @@
             }
         });
 
-        // เคลียร์ error เมื่อเริ่มพิมพ์ใหม่
         document.getElementById('phone').addEventListener('focus', function() {
             hideFormError();
         });
 
         document.getElementById('birthday').addEventListener('focus', function() {
             hideFormError();
+        });
+
+        // หยุดตรวจสอบอัตโนมัติเมื่อผู้ใช้ออกจากหน้า
+        window.addEventListener('beforeunload', function() {
+            stopAutoCheck();
         });
     </script>
 </body>
