@@ -224,14 +224,21 @@
             border-radius: 30px;
             margin-top: 18px;
             display: none;
-            align-items: center;
+            align-items: flex-start;
             gap: 14px;
             font-weight: 500;
             border-left: 5px solid;
+            line-height: 1.6;
+            word-wrap: break-word;
         }
 
         .msg-box.show {
             display: flex;
+        }
+
+        .msg-box i {
+            flex-shrink: 0;
+            margin-top: 3px;
         }
 
         .msg-box.success {
@@ -257,13 +264,13 @@
         }
 
         .msg-box.warning {
-            background: #fdf3e3;
-            color: #8a5a00;
-            border-color: #e6a817;
+            background: #fff8e1;
+            color: #6d4c00;
+            border-color: #ffa000;
         }
 
         .msg-box.warning i {
-            color: #e6a817;
+            color: #ffa000;
             font-size: 1.6rem;
         }
 
@@ -367,6 +374,7 @@
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            transition: all 0.3s ease;
         }
 
         .steps-list li i {
@@ -378,11 +386,28 @@
         }
 
         .steps-list li.completed {
-            opacity: 0.6;
+            opacity: 0.5;
+            text-decoration: line-through;
         }
 
         .steps-list li.completed i {
-            color: #28a745;
+            color: #28a745 !important;
+        }
+
+        .steps-list li.active {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding-left: 8px;
+        }
+
+        .steps-list li.active i {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         .divider {
@@ -573,6 +598,9 @@
         let isAutoChecking = false;
         let hasCopied = false;
         let hasOpenedChat = false;
+        let hasSentMessage = false;
+        let lastCheckTime = null;
+        let checkCount = 0;
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -777,8 +805,9 @@
                     if (res.status === 'ok' && res.accountLinkUrl) {
                         // พบการยืนยันแล้ว - หยุดตรวจสอบอัตโนมัติ
                         stopAutoCheck();
+                        markStepCompleted(3);
                         markStepCompleted(4);
-                        showLinkStatus('success', 'พบการยืนยันแล้ว! กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
+                        showLinkStatus('success', '✅ พบการยืนยันแล้ว! กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
                         setTimeout(function() {
                             window.location.href = res.accountLinkUrl;
                         }, 1500);
@@ -790,27 +819,36 @@
                         }
                         
                         // แสดงข้อความแนะนำที่ชัดเจน
-                        if (!hasCopied) {
-                            showLinkStatus('warning', 
-                                '⚠️ ยังไม่พบการยืนยันจาก LINE\n\n' +
-                                'กรุณาทำตามขั้นตอน:\n' +
-                                '1. คัดลอกรหัสยืนยันด้านบน\n' +
-                                '2. กด "เปิดแชทกับ LINE OA"\n' +
-                                '3. วางและส่งข้อความยืนยันในแชท\n' +
-                                '4. กลับมากด "ตรวจสอบสถานะ" อีกครั้ง');
-                        } else if (!hasOpenedChat) {
-                            showLinkStatus('warning', 
-                                'ยังไม่พบการยืนยันจาก LINE\n\n' +
-                                'คุณยังไม่ได้เปิดแชทกับ LINE OA\n' +
-                                'กรุณากดปุ่ม "เปิดแชทกับ LINE OA" ด้านบน');
-                        } else {
-                            showLinkStatus('warning', 
-                                'ยังไม่พบการยืนยันจาก LINE\n\n' +
-                                'กรุณาตรวจสอบว่า:\n' +
-                                '• ได้ส่งข้อความยืนยันในแชทแล้ว\n' +
-                                '• ข้อความตรงกับรหัสที่แสดง\n' +
-                                '• รอสักครู่แล้วลองใหม่อีกครั้ง');
+                        let warningMessage = '⚠️ ยังไม่พบการยืนยันจาก LINE\n\n';
+                        
+                        if (!hasCopied && !hasOpenedChat) {
+                            // ยังไม่ได้ทำอะไรเลย
+                            warningMessage += 'กรุณาทำตามขั้นตอน:\n' +
+                                           '1️⃣ คัดลอกรหัสยืนยันด้านบน\n' +
+                                           '2️⃣ กด "เปิดแชทกับ LINE OA"\n' +
+                                           '3️⃣ วางและส่งข้อความยืนยันในแชท\n' +
+                                           '4️⃣ กลับมากด "ตรวจสอบสถานะ" อีกครั้ง';
+                            markStepActive(1);
+                        } else if (hasCopied && !hasOpenedChat) {
+                            // คัดลอกแล้ว แต่ยังไม่เปิดแชท
+                            warningMessage += 'คุณคัดลอกรหัสแล้ว ✅\n\n' +
+                                           'ขั้นตอนถัดไป:\n' +
+                                           '1️⃣ กด "เปิดแชทกับ LINE OA"\n' +
+                                           '2️⃣ วางรหัสที่คัดลอกไว้\n' +
+                                           '3️⃣ ส่งข้อความในแชท\n' +
+                                           '4️⃣ กลับมากด "ตรวจสอบสถานะ"';
+                            markStepActive(2);
+                        } else if (hasOpenedChat) {
+                            // เปิดแชทแล้ว แต่ยังไม่พบการยืนยัน
+                            warningMessage += 'ตรวจสอบว่า:\n' +
+                                           '✅ ได้ส่งข้อความในแชท LINE แล้ว\n' +
+                                           '✅ ข้อความตรงกับรหัสที่แสดง\n' +
+                                           '✅ ใช้บัญชี LINE เดียวกัน\n\n' +
+                                           '💡 หากรอเกิน 1 นาที ให้ลองส่งข้อความอีกครั้ง';
+                            markStepActive(3);
                         }
+                        
+                        showLinkStatus('warning', warningMessage);
                         
                         // เริ่มตรวจสอบอัตโนมัติถ้ายังไม่เริ่ม
                         if (!isAutoChecking) {
@@ -862,6 +900,9 @@
         function checkStatusSilently() {
             if (!regToken) return;
             
+            checkCount++;
+            lastCheckTime = new Date();
+            
             callServer('clientCheckStatus', [regToken],
                 function(res) {
                     if (res && res.status === 'ok') {
@@ -873,11 +914,22 @@
                         setTimeout(function() {
                             requestLinkAccount();
                         }, 1000);
+                    } else if (res && res.status === 'needChat') {
+                        // ยังไม่พบ - แสดงสถานะการตรวจสอบ
+                        if (checkCount > 2) {
+                            // ตรวจสอบหลายครั้งแล้วยังไม่พบ
+                            showLinkStatus('warning', 
+                                '⏳ ยังไม่พบการยืนยันจาก LINE\n\n' +
+                                'ระบบได้ตรวจสอบแล้ว ' + checkCount + ' ครั้ง\n' +
+                                'ตรวจสอบล่าสุด: ' + lastCheckTime.toLocaleTimeString('th-TH') + '\n\n' +
+                                'กรุณาตรวจสอบว่า:\n' +
+                                '✅ ส่งข้อความในแชท LINE แล้ว\n' +
+                                '✅ ข้อความตรงกับรหัสที่แสดง\n' +
+                                '💡 จะตรวจสอบอัตโนมัติอีกครั้งใน 30 วินาที');
+                        }
                     }
-                    // ถ้ายังไม่พบ (needChat) - เงียบไว้และรอตรวจสอบรอบถัดไป
                 },
                 function(err) {
-                    // เงียบไว้เมื่อมีข้อผิดพลาด - จะลองใหม่ในรอบถัดไป
                     console.log('Auto-check error:', err.message);
                 });
         }
@@ -889,6 +941,14 @@
             const stepItem = document.getElementById('step' + stepNumber + 'Item');
             if (stepItem) {
                 stepItem.classList.add('completed');
+                stepItem.classList.remove('active');
+            }
+        }
+
+        function markStepActive(stepNumber) {
+            const stepItem = document.getElementById('step' + stepNumber + 'Item');
+            if (stepItem) {
+                stepItem.classList.add('active');
             }
         }
 
@@ -907,14 +967,15 @@
                 
                 hasCopied = true;
                 markStepCompleted(1);
+                markStepActive(2);
                 
-                // แสดงข้อความแนะนำ
+                // แสดงข้อความแนะนำขั้นตอนถัดไป
                 showLinkStatus('info', 
                     '✅ คัดลอกรหัสแล้ว!\n\n' +
                     'ขั้นตอนถัดไป:\n' +
-                    '1. กด "เปิดแชทกับ LINE OA"\n' +
-                    '2. วางรหัสที่คัดลอกไว้\n' +
-                    '3. ส่งข้อความในแชท');
+                    '1️⃣ กด "เปิดแชทกับ LINE OA"\n' +
+                    '2️⃣ วางรหัสที่คัดลอกไว้\n' +
+                    '3️⃣ ส่งข้อความในแชท');
             }
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -941,6 +1002,7 @@
 
         function showLinkStatus(type, text) {
             linkMsg.className = 'msg-box show ' + type;
+            
             if (type === 'error') {
                 linkMsgIcon.className = 'fas fa-exclamation-circle';
             } else if (type === 'warning') {
@@ -952,6 +1014,7 @@
             } else {
                 linkMsgIcon.className = 'fas fa-info-circle';
             }
+            
             // แปลง \n เป็น <br> สำหรับการแสดงผล
             linkMsgText.innerHTML = text.replace(/\n/g, '<br>');
         }
@@ -1038,12 +1101,14 @@
         document.getElementById('btnOpenChat').addEventListener('click', function() {
             hasOpenedChat = true;
             markStepCompleted(2);
+            markStepActive(3);
+            
             showLinkStatus('info', 
                 '📱 กำลังเปิดแชท LINE...\n\n' +
                 'เมื่อเปิดแชทแล้ว:\n' +
-                '1. วางรหัสยืนยันที่คัดลอกไว้\n' +
-                '2. กดส่งข้อความ\n' +
-                '3. กลับมาหน้านี้แล้วกด "ตรวจสอบสถานะ"');
+                '1️⃣ วางรหัสยืนยันที่คัดลอกไว้\n' +
+                '2️⃣ กดส่งข้อความ\n' +
+                '3️⃣ กลับมาหน้านี้แล้วกด "ตรวจสอบสถานะ"');
         });
 
         document.getElementById('phone').addEventListener('focus', function() {
