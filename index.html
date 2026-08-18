@@ -135,6 +135,33 @@
             color: #1f7a8c;
         }
 
+        /* สถานะของ input */
+        .form-group input.valid {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .form-group input.invalid {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .form-group .validation-hint {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            padding-left: 45px;
+            transition: all 0.3s ease;
+            min-height: 20px;
+        }
+
+        .form-group .validation-hint.success {
+            color: #28a745;
+        }
+
+        .form-group .validation-hint.error {
+            color: #dc3545;
+        }
+
         .btn {
             width: 100%;
             padding: 15px;
@@ -383,12 +410,14 @@
                     <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
                     <input type="tel" id="phone" name="phone" placeholder="0812345678" pattern="[0-9]{10}" maxlength="10" required>
                     <i class="fas fa-phone-alt input-icon"></i>
+                    <div id="phoneHint" class="validation-hint"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="birthday"><i class="fas fa-birthday-cake"></i> วันเกิด</label>
-                    <input type="date" id="birthday" name="birthday" required>
+                    <input type="date" id="birthday" name="birthday" required min="1900-01-01" max="2025-12-31">
                     <i class="fas fa-birthday-cake input-icon"></i>
+                    <div id="birthdayHint" class="validation-hint"></div>
                 </div>
 
                 <div id="formError" class="msg-box error" style="margin-top: 0; margin-bottom: 15px;">
@@ -451,6 +480,7 @@
         let regToken = '';
         let regOaLink = '';
         let regMessage = '';
+        let currentYear = new Date().getFullYear();
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -462,6 +492,89 @@
         const linkBtn = document.getElementById("btnLink");
         const formError = document.getElementById("formError");
         const formErrorText = document.getElementById("formErrorText");
+        const phoneHint = document.getElementById("phoneHint");
+        const birthdayHint = document.getElementById("birthdayHint");
+
+        // ============================================================
+        //  ตั้งค่า max date สำหรับวันเกิด (วันนี้)
+        // ============================================================
+        document.getElementById("birthday").max = new Date().toISOString().split('T')[0];
+
+        // ============================================================
+        //  ตรวจสอบเบอร์โทรศัพท์
+        // ============================================================
+        function validatePhone(phone) {
+            // รองรับรูปแบบ: 0812345678, 081-234-5678, +66812345678
+            const phoneRegex = /^(\+?66|0)\d{8,9}$/;
+            const cleanPhone = phone.replace(/[\s-]/g, '');
+            return phoneRegex.test(cleanPhone);
+        }
+
+        // ============================================================
+        //  ตรวจสอบวันเกิด
+        // ============================================================
+        function validateBirthday(birthday) {
+            // ตรวจสอบว่ามีการกรอกวันเกิดหรือไม่
+            if (!birthday) {
+                return {
+                    valid: false,
+                    message: 'กรุณาเลือกวันเกิด'
+                };
+            }
+
+            const birthDate = new Date(birthday);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            birthDate.setHours(0, 0, 0, 0);
+
+            // ตรวจสอบว่าวันเกิดไม่ใช่ในอนาคต
+            if (birthDate > today) {
+                return {
+                    valid: false,
+                    message: 'วันเกิดไม่สามารถเป็นวันที่ในอนาคตได้'
+                };
+            }
+
+            // คำนวณอายุ
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            const dayDiff = today.getDate() - birthDate.getDate();
+
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                age--;
+            }
+
+            // ตรวจสอบอายุขั้นต่ำ (ต้องมีอายุ 1 ปีขึ้นไป)
+            if (age < 1) {
+                return {
+                    valid: false,
+                    message: 'อายุต้องมากกว่า 1 ปี'
+                };
+            }
+
+            // ตรวจสอบอายุสูงสุด
+            if (age > 120) {
+                return {
+                    valid: false,
+                    message: 'กรุณาตรวจสอบวันเกิดให้ถูกต้อง (อายุเกิน 120 ปี)'
+                };
+            }
+
+            // ตรวจสอบปีเกิดขั้นต่ำ
+            const minYear = 1900;
+            if (birthDate.getFullYear() < minYear) {
+                return {
+                    valid: false,
+                    message: 'กรุณาตรวจสอบปีเกิดให้ถูกต้อง (ต้องไม่ก่อนปี ค.ศ. ' + minYear + ')'
+                };
+            }
+
+            return {
+                valid: true,
+                age: age,
+                message: 'อายุ: ' + age + ' ปี'
+            };
+        }
 
         // ============================================================
         //  เรียก API ฝั่งเซิร์ฟเวอร์
@@ -503,56 +616,43 @@
         }
 
         // ============================================================
-        //  ตรวจสอบรูปแบบเบอร์โทรศัพท์
-        // ============================================================
-        function validatePhone(phone) {
-            // รองรับรูปแบบ: 0812345678, 081-234-5678, +66812345678
-            const phoneRegex = /^(\+?66|0)\d{8,9}$/;
-            const cleanPhone = phone.replace(/[\s-]/g, '');
-            return phoneRegex.test(cleanPhone);
-        }
-
-        // ============================================================
         //  ขั้นตอนที่ 1: ลงทะเบียน
         // ============================================================
         form.addEventListener("submit", function(e) {
             e.preventDefault();
-            
+
             const phone = document.getElementById("phone").value.trim();
             const birthday = document.getElementById("birthday").value;
-            
+
             // ซ่อน error เก่า
             hideFormError();
-            
-            // ตรวจสอบความถูกต้อง
+
+            // ตรวจสอบเบอร์โทรศัพท์
             if (!phone) {
                 showFormError('กรุณากรอกเบอร์โทรศัพท์');
+                document.getElementById("phone").focus();
+                setInputStatus(document.getElementById("phone"), 'invalid');
                 return;
             }
-            
+
             if (!validatePhone(phone)) {
                 showFormError('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ตัวอย่าง: 0812345678)');
+                document.getElementById("phone").focus();
+                setInputStatus(document.getElementById("phone"), 'invalid');
                 return;
             }
-            
-            if (!birthday) {
-                showFormError('กรุณาเลือกวันเกิด');
+
+            // ตรวจสอบวันเกิด
+            const birthdayValidation = validateBirthday(birthday);
+            if (!birthdayValidation.valid) {
+                showFormError(birthdayValidation.message);
+                document.getElementById("birthday").focus();
+                setInputStatus(document.getElementById("birthday"), 'invalid');
                 return;
             }
-            
-            // ตรวจสอบอายุ (ต้องไม่น้อยกว่า 1 ปี และไม่เกิน 120 ปี)
-            const birthDate = new Date(birthday);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            
-            if (age < 1 || age > 120) {
-                showFormError('กรุณาตรวจสอบวันเกิดให้ถูกต้อง');
-                return;
-            }
+
+            // แสดงอายุที่คำนวณได้
+            console.log('อายุ: ' + birthdayValidation.age + ' ปี');
 
             subBtn.disabled = true;
             subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
@@ -569,7 +669,7 @@
 
                         document.getElementById("tokenDisplay").textContent = regToken;
                         document.getElementById("confirmMessage").textContent = regMessage;
-                        
+
                         if (regOaLink) {
                             document.getElementById("btnOpenChat").href = regOaLink;
                         }
@@ -620,7 +720,7 @@
                             regOaLink = res.oaLink;
                             document.getElementById("btnOpenChat").href = res.oaLink;
                         }
-                        showLinkStatus('warning', 
+                        showLinkStatus('warning',
                             'ยังไม่พบการยืนยันจาก LINE กรุณากด "เปิดแชทกับ LINE OA" แล้วส่งข้อความยืนยันให้เรียบร้อย จากนั้นกดปุ่มนี้อีกครั้ง');
                     } else if (res.status === 'notfound') {
                         showLinkStatus('error', 'ไม่พบข้อมูลการลงทะเบียนนี้ในระบบ');
@@ -702,13 +802,76 @@
             formErrorText.textContent = '';
         }
 
-        // ฟอร์แมตเบอร์โทรศัพท์อัตโนมัติ
+        function setInputStatus(inputElement, status) {
+            if (status === 'valid') {
+                inputElement.classList.remove('invalid');
+                inputElement.classList.add('valid');
+            } else if (status === 'invalid') {
+                inputElement.classList.remove('valid');
+                inputElement.classList.add('invalid');
+            } else {
+                inputElement.classList.remove('valid', 'invalid');
+            }
+        }
+
+        function showHint(element, message, type = '') {
+            element.textContent = message;
+            element.className = 'validation-hint ' + type;
+        }
+
+        function hideHint(element) {
+            element.textContent = '';
+            element.className = 'validation-hint';
+        }
+
+        // ============================================================
+        //  Event Listeners สำหรับการตรวจสอบแบบ Real-time
+        // ============================================================
+        
+        // ตรวจสอบเบอร์โทรศัพท์แบบ real-time
         document.getElementById('phone').addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^\d]/g, '');
             if (value.length > 10) {
                 value = value.slice(0, 10);
             }
             e.target.value = value;
+
+            if (value.length === 0) {
+                setInputStatus(e.target, '');
+                hideHint(phoneHint);
+            } else if (value.length === 10 && validatePhone(value)) {
+                setInputStatus(e.target, 'valid');
+                showHint(phoneHint, '✓ เบอร์โทรศัพท์ถูกต้อง', 'success');
+            } else if (value.length < 10) {
+                setInputStatus(e.target, 'invalid');
+                showHint(phoneHint, 'กรุณากรอกเบอร์ให้ครบ 10 หลัก', 'error');
+            } else {
+                setInputStatus(e.target, 'invalid');
+                showHint(phoneHint, 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง', 'error');
+            }
+        });
+
+        // ตรวจสอบวันเกิดแบบ real-time
+        document.getElementById('birthday').addEventListener('change', function(e) {
+            const birthday = e.target.value;
+            const validation = validateBirthday(birthday);
+
+            if (!validation.valid) {
+                setInputStatus(e.target, 'invalid');
+                showHint(birthdayHint, '✗ ' + validation.message, 'error');
+            } else {
+                setInputStatus(e.target, 'valid');
+                showHint(birthdayHint, '✓ ' + validation.message, 'success');
+            }
+        });
+
+        // เคลียร์ error เมื่อเริ่มพิมพ์ใหม่
+        document.getElementById('phone').addEventListener('focus', function() {
+            hideFormError();
+        });
+
+        document.getElementById('birthday').addEventListener('focus', function() {
+            hideFormError();
         });
     </script>
 </body>
