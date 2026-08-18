@@ -53,7 +53,7 @@
     <label>วันเกิด</label>
     <input id="birthday" type="date">
 
-    <button id="submitBtn" onclick="submitForm()">ลงทะเบียน</button>
+    <button id="submitBtn">ลงทะเบียน</button>
     <div id="status"></div>
 
     <!-- แสดงเมื่อ auto-fill ข้อความใน LINE ไม่ทำงาน (เช่น LINE Desktop App) -->
@@ -62,7 +62,7 @@
         ถ้าเปิด LINE แล้วห้องแชทว่าง ไม่มีข้อความ ให้กดคัดลอกข้อความนี้แล้ววางส่งในแชทเอง:
       </div>
       <div id="fallbackMessage" style="font-weight:600; font-size:15px; margin-bottom:10px;"></div>
-      <button id="copyBtn" style="background:#333;" onclick="copyMessage()">คัดลอกข้อความ</button>
+      <button id="copyBtn" style="background:#333;">คัดลอกข้อความ</button>
     </div>
   </div>
 
@@ -120,6 +120,11 @@
           status.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
         });
     }
+
+    // ผูก event ตรงนี้แทนการใช้ onclick="..." ในแท็ก HTML
+    // (บาง host / CMS / iframe preview จะบล็อก inline event handler ด้วย CSP)
+    document.getElementById('submitBtn').addEventListener('click', submitForm);
+    document.getElementById('copyBtn').addEventListener('click', copyMessage);
   </script>
 </body>
 </html>
