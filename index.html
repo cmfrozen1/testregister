@@ -360,6 +360,28 @@
             <div class="divider"></div>
         </div>
 
+        <!-- กล่องแสดงค่าที่ต้องตั้งใน LINE Developers Console -->
+        <div id="configPanel" style="background:#eef6f8; border:2px dashed #06C755; border-radius:20px; padding:16px 18px; margin-bottom:24px; font-size:0.85rem;">
+            <div style="font-weight:700; color:#0b3b4b; margin-bottom:10px;">
+                <i class="fas fa-wrench" style="color:#06C755;"></i> ค่าที่ต้องตั้งใน LINE Developers Console
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="display:block; color:#4b6a74; margin-bottom:4px;">Callback URL (แท็บ LINE Login):</label>
+                <div style="display:flex; gap:6px;">
+                    <input id="cfgRedirectUri" readonly style="flex:1; padding:8px 10px; border:1px solid #dce8ec; border-radius:8px; font-size:0.78rem; background:#fff; color:#0c3b48;">
+                    <button type="button" onclick="copyField('cfgRedirectUri', this)" style="border:none; background:#06C755; color:#fff; border-radius:8px; padding:0 12px; cursor:pointer; font-size:0.78rem;">คัดลอก</button>
+                </div>
+            </div>
+            <div>
+                <label style="display:block; color:#4b6a74; margin-bottom:4px;">Channel ID (แท็บ Basic settings) ต้องตรงกับ:</label>
+                <div style="display:flex; gap:6px;">
+                    <input id="cfgChannelId" readonly style="flex:1; padding:8px 10px; border:1px solid #dce8ec; border-radius:8px; font-size:0.78rem; background:#fff; color:#0c3b48;">
+                    <button type="button" onclick="copyField('cfgChannelId', this)" style="border:none; background:#06C755; color:#fff; border-radius:8px; padding:0 12px; cursor:pointer; font-size:0.78rem;">คัดลอก</button>
+                </div>
+            </div>
+            <div id="cfgWarning" style="display:none; margin-top:10px; color:#a13030; font-weight:600;"></div>
+        </div>
+
         <!-- ขั้นตอนที่ 1: กรอกข้อมูลลงทะเบียน -->
         <div id="step1" class="card show">
             <form id="myForm" novalidate>
@@ -449,14 +471,32 @@
             if (!LINE_CHANNEL_ID) problems.push('LINE_CHANNEL_ID ว่างเปล่า');
             if (WEB_APP_URL && !/^https:\/\//.test(WEB_APP_URL)) problems.push('WEB_APP_URL ต้องขึ้นต้นด้วย https://');
 
+            document.getElementById('cfgRedirectUri').value = LINE_CALLBACK_URL;
+            document.getElementById('cfgChannelId').value = LINE_CHANNEL_ID;
+
+            const warningBox = document.getElementById('cfgWarning');
             if (problems.length) {
-                console.error('[CONFIG ERROR]', problems.join(', '));
+                warningBox.style.display = 'block';
+                warningBox.textContent = '⚠ ' + problems.join(', ');
             }
 
             console.log('%c[LINE Login Debug]', 'font-weight:bold;color:#06C755;');
             console.log('redirect_uri ที่จะใช้จริง (ต้องตรงกับ Callback URL ใน LINE Developers Console แบบเป๊ะๆ ทุกตัวอักษร):');
             console.log(LINE_CALLBACK_URL);
         })();
+
+        function copyField(id, btn) {
+            const el = document.getElementById(id);
+            el.select();
+            el.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(el.value).then(function() {
+                const original = btn.textContent;
+                btn.textContent = 'คัดลอกแล้ว ✓';
+                setTimeout(function() { btn.textContent = original; }, 1500);
+            }).catch(function() {
+                document.execCommand('copy');
+            });
+        }
 
         // ============================================================
         //  ตรวจสอบเบอร์โทรศัพท์
@@ -561,8 +601,7 @@
                 client_id: LINE_CHANNEL_ID,
                 redirect_uri: LINE_CALLBACK_URL,
                 state: state,
-                scope: 'profile openid',
-                bot_prompt: 'aggressive'
+                scope: 'profile'
             });
 
             return 'https://access.line.me/oauth2/v2.1/authorize?' + params.toString();
