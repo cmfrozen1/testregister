@@ -365,14 +365,14 @@
             <form id="myForm" novalidate>
                 <div class="form-group">
                     <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
-                    <input type="tel" id="phone" name="phone" placeholder="0812345678" pattern="[0-9]{10}" maxlength="10" required>
+                    <input type="tel" id="phone" name="phone" placeholder="0812345678" pattern="[0-9]{10}" maxlength="10" required inputmode="numeric" autocomplete="tel">
                     <i class="fas fa-phone-alt input-icon"></i>
                     <div id="phoneHint" class="validation-hint"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="birthday"><i class="fas fa-birthday-cake"></i> วันเกิด</label>
-                    <input type="date" id="birthday" name="birthday" required min="1900-01-01" max="2025-12-31">
+                    <input type="date" id="birthday" name="birthday" required min="1900-01-01">
                     <i class="fas fa-birthday-cake input-icon"></i>
                     <div id="birthdayHint" class="validation-hint"></div>
                 </div>
@@ -397,20 +397,23 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <i class="fab fa-line fa-spin"></i>
-            <h3>กำลังเชื่อมต่อ LINE...</h3>
-            <p>กรุณารอสักครู่</p>
+            <h3 id="loadingTitle">กำลังเชื่อมต่อ LINE...</h3>
+            <p id="loadingText">กรุณารอสักครู่</p>
         </div>
     </div>
 
     <script>
         // ============================================================
         //  ตั้งค่า: URL ของ Web App (GAS) ที่ใช้เป็น API endpoint
+        //  *** ต้องตรงกับ URL ที่ deploy จริง (ลงท้ายด้วย /exec) ***
         // ============================================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
         // ============================================================
         //  LINE Login Configuration
         //  Channel ID ของคุณ: 2000688983
+        //  *** Callback URL นี้ต้องเพิ่มไว้ใน LINE Developers Console
+        //      (LINE Login channel > Callback URL) ให้ตรงตัวอักษรทุกตัว ***
         // ============================================================
         const LINE_CHANNEL_ID = "2000688983";
         const LINE_CALLBACK_URL = WEB_APP_URL;
@@ -422,19 +425,24 @@
         const phoneHint = document.getElementById("phoneHint");
         const birthdayHint = document.getElementById("birthdayHint");
         const loadingOverlay = document.getElementById("loadingOverlay");
+        const loadingTitle = document.getElementById("loadingTitle");
+        const loadingText = document.getElementById("loadingText");
+        const subBtnDefaultHtml = subBtn.innerHTML;
 
         // ============================================================
-        //  ตั้งค่า max date สำหรับวันเกิด (วันนี้)
+        //  ตั้งค่า max date สำหรับวันเกิด (วันนี้) - เดิมล็อกไว้ปี 2025 ตายตัว
         // ============================================================
         document.getElementById("birthday").max = new Date().toISOString().split('T')[0];
 
         // ============================================================
         //  ตรวจสอบเบอร์โทรศัพท์
+        //  แก้ไข: เดิม regex รับ +66 ได้ แต่ input listener บังคับกรอกได้
+        //  แค่ตัวเลข 10 หลักขึ้นต้นด้วย 0 เท่านั้น ทำให้ validate ไม่ตรงกัน
+        //  จึงปรับ regex ให้สอดคล้องกับสิ่งที่ผู้ใช้กรอกได้จริง
         // ============================================================
         function validatePhone(phone) {
-            const phoneRegex = /^(\+?66|0)\d{8,9}$/;
             const cleanPhone = phone.replace(/[\s-]/g, '');
-            return phoneRegex.test(cleanPhone);
+            return /^0\d{9}$/.test(cleanPhone);
         }
 
         // ============================================================
@@ -446,6 +454,10 @@
             }
 
             const birthDate = new Date(birthday);
+            if (isNaN(birthDate.getTime())) {
+                return { valid: false, message: 'รูปแบบวันเกิดไม่ถูกต้อง' };
+            }
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             birthDate.setHours(0, 0, 0, 0);
@@ -495,7 +507,12 @@
             }
 
             fetch(WEB_APP_URL, { method: 'POST', body: fd })
-                .then(function(res) { return res.text(); })
+                .then(function(res) {
+                    if (!res.ok) {
+                        throw new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')');
+                    }
+                    return res.text();
+                })
                 .then(function(text) {
                     let res;
                     try {
@@ -523,7 +540,7 @@
                 scope: 'profile openid',
                 bot_prompt: 'aggressive'
             });
-            
+
             return 'https://access.line.me/oauth2/v2.1/authorize?' + params.toString();
         }
 
@@ -564,6 +581,8 @@
             // แสดง Loading
             subBtn.disabled = true;
             subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังลงทะเบียน...';
+            loadingTitle.textContent = 'กำลังลงทะเบียน...';
+            loadingText.textContent = 'กรุณารอสักครู่';
             loadingOverlay.classList.add('show');
 
             // ลงทะเบียนผ่าน GAS
@@ -572,31 +591,30 @@
                     if (res && res.status === 'ok') {
                         // ลงทะเบียนสำเร็จ
                         const regToken = res.token || '';
-                        
+
                         // สร้าง state สำหรับ LINE Login
                         const lineState = 'reg_' + regToken + '_' + phone;
-                        
+
                         // อัปเดตข้อความ Loading
-                        loadingOverlay.querySelector('h3').textContent = 'กำลังเชื่อมต่อ LINE...';
-                        loadingOverlay.querySelector('p').textContent = 'กรุณาเข้าสู่ระบบ LINE เพื่อยืนยันตัวตน';
-                        
+                        loadingTitle.textContent = 'กำลังเชื่อมต่อ LINE...';
+                        loadingText.textContent = 'กรุณาเข้าสู่ระบบ LINE เพื่อยืนยันตัวตน';
+
                         // Redirect ไปยัง LINE Login
                         setTimeout(function() {
                             const lineLoginUrl = createLineLoginUrl(lineState);
-                            console.log('LINE Login URL:', lineLoginUrl);
                             window.location.href = lineLoginUrl;
-                        }, 1000);
-                        
+                        }, 800);
+
                     } else {
                         subBtn.disabled = false;
-                        subBtn.innerHTML = '<i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE';
+                        subBtn.innerHTML = subBtnDefaultHtml;
                         loadingOverlay.classList.remove('show');
                         showFormError((res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
                     }
                 },
                 function(err) {
                     subBtn.disabled = false;
-                    subBtn.innerHTML = '<i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE';
+                    subBtn.innerHTML = subBtnDefaultHtml;
                     loadingOverlay.classList.remove('show');
                     showFormError(err.message);
                 });
@@ -640,7 +658,7 @@
         // ============================================================
         //  Event Listeners
         // ============================================================
-        
+
         document.getElementById('phone').addEventListener('input', function(e) {
             let value = e.target.value.replace(/[^\d]/g, '');
             if (value.length > 10) {
@@ -659,7 +677,7 @@
                 showHint(phoneHint, 'กรุณากรอกเบอร์ให้ครบ 10 หลัก', 'error');
             } else {
                 setInputStatus(e.target, 'invalid');
-                showHint(phoneHint, 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง', 'error');
+                showHint(phoneHint, 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0)', 'error');
             }
         });
 
