@@ -408,10 +408,13 @@
         // ============================================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
-        // LINE Login Configuration
-        const LINE_LOGIN_URL = "https://access.line.me/oauth2/v2.1/authorize";
-        const LINE_CHANNEL_ID = "YOUR_LINE_CHANNEL_ID"; // ใส่ Channel ID ของคุณ
-        const LINE_CALLBACK_URL = "YOUR_CALLBACK_URL"; // ใส่ Callback URL ของคุณ (URL ของ GAS Web App)
+        // ============================================================
+        //  LINE Login Configuration
+        //  ต้องใส่ค่า LINE Channel ID จริง (ตัวเลข 10 หลัก)
+        //  ดูได้จาก LINE Developers Console
+        // ============================================================
+        const LINE_CHANNEL_ID = "1657123456"; // ตัวอย่าง: ใส่ Channel ID จริงของคุณ (ตัวเลข 10 หลัก)
+        const LINE_CALLBACK_URL = WEB_APP_URL; // ใช้ URL เดียวกับ GAS Web App
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -519,10 +522,10 @@
                 redirect_uri: LINE_CALLBACK_URL,
                 state: state,
                 scope: 'profile openid',
-                bot_prompt: 'aggressive' // บังคับให้แสดงหน้าจอเพิ่มบอท
+                bot_prompt: 'aggressive'
             });
             
-            return LINE_LOGIN_URL + '?' + params.toString();
+            return 'https://access.line.me/oauth2/v2.1/authorize?' + params.toString();
         }
 
         // ============================================================
@@ -571,7 +574,7 @@
                         // ลงทะเบียนสำเร็จ
                         const regToken = res.token || '';
                         
-                        // สร้าง state สำหรับ LINE Login (เก็บ token และ phone)
+                        // สร้าง state สำหรับ LINE Login
                         const lineState = 'reg_' + regToken + '_' + phone;
                         
                         // อัปเดตข้อความ Loading
