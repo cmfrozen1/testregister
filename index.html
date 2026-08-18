@@ -1,21 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียนสมาชิก - เชื่อมต่อ LINE</title>
-
-    <!-- Font Awesome Icons -->
+    <title>ลงทะเบียนสมาชิก</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(145deg, #0f2f3a 0%, #1a5f6e 100%);
@@ -25,330 +16,61 @@
             justify-content: center;
             padding: 30px 20px;
         }
-
         .container {
             max-width: 520px;
             width: 100%;
             background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(10px);
             border-radius: 35px;
             padding: 45px 40px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
         }
-
-        .container:hover {
-            transform: translateY(-3px);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        .header { text-align: center; margin-bottom: 30px; }
         .header .icon-circle {
             background: linear-gradient(135deg, #06C755, #05a344);
-            width: 75px;
-            height: 75px;
+            width: 75px; height: 75px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin: 0 auto 15px;
-            box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4);
         }
-
-        .header .icon-circle i {
-            font-size: 35px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0b3b4b;
-            letter-spacing: 0.5px;
-        }
-
-        .header p {
-            color: #4b6a74;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-
-        .header .divider {
-            height: 3px;
-            background: linear-gradient(to right, transparent, #06C755, transparent);
-            width: 80px;
-            margin: 12px auto 0;
-            border-radius: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #1c4f5e;
-            font-size: 0.92rem;
-            margin-bottom: 6px;
-        }
-
-        .form-group label i {
-            margin-right: 8px;
-            color: #06C755;
-            width: 20px;
-        }
-
+        .header .icon-circle i { font-size: 35px; color: white; }
+        .header h1 { font-size: 1.8rem; color: #0b3b4b; }
+        .header p { color: #4b6a74; margin-top: 5px; }
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group label { display: block; font-weight: 600; color: #1c4f5e; margin-bottom: 6px; }
         .form-group input {
-            width: 100%;
-            padding: 13px 18px 13px 45px;
-            font-size: 1rem;
-            border: 2px solid #dce8ec;
-            border-radius: 30px;
-            background: #f8fbfc;
-            transition: all 0.3s ease;
-            outline: none;
-            color: #0c3b48;
+            width: 100%; padding: 13px 18px 13px 45px;
+            font-size: 1rem; border: 2px solid #dce8ec;
+            border-radius: 30px; background: #f8fbfc;
+            outline: none; color: #0c3b48;
         }
-
-        .form-group input:focus {
-            border-color: #06C755;
-            background: #ffffff;
-            box-shadow: 0 0 0 5px rgba(6, 199, 85, 0.12);
-        }
-
         .form-group .input-icon {
-            position: absolute;
-            left: 18px;
-            top: 42px;
-            color: #6f8f9a;
-            font-size: 1.1rem;
-            transition: 0.3s;
-            pointer-events: none;
+            position: absolute; left: 18px; top: 42px;
+            color: #6f8f9a; font-size: 1.1rem;
         }
-
-        .form-group input:focus~.input-icon {
-            color: #06C755;
-        }
-
-        .form-group input.valid {
-            border-color: #28a745;
-            background: #f0fff4;
-        }
-
-        .form-group input.invalid {
-            border-color: #dc3545;
-            background: #fff5f5;
-        }
-
-        .form-group .validation-hint {
-            font-size: 0.85rem;
-            margin-top: 5px;
-            padding-left: 45px;
-            transition: all 0.3s ease;
-            min-height: 20px;
-        }
-
-        .form-group .validation-hint.success {
-            color: #28a745;
-        }
-
-        .form-group .validation-hint.error {
-            color: #dc3545;
-        }
-
         .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            text-decoration: none;
+            width: 100%; padding: 15px;
+            border: none; border-radius: 50px;
+            font-size: 1.05rem; font-weight: 700;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 12px;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #06C755, #05a344);
             color: white;
-            box-shadow: 0 8px 20px rgba(6, 199, 85, 0.35);
         }
-
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, #05b34c, #048a3a);
-            transform: scale(1.02);
-            box-shadow: 0 12px 30px rgba(6, 199, 85, 0.5);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .msg-box {
-            padding: 14px 20px;
-            border-radius: 30px;
-            margin-top: 18px;
-            display: none;
-            align-items: flex-start;
-            gap: 14px;
-            font-weight: 500;
-            border-left: 5px solid;
-            line-height: 1.6;
-            word-wrap: break-word;
+            padding: 14px 20px; border-radius: 30px;
+            margin-top: 18px; display: none;
+            align-items: center; gap: 14px;
+            font-weight: 500; border-left: 5px solid;
         }
-
-        .msg-box.show {
-            display: flex;
-        }
-
-        .msg-box i {
-            flex-shrink: 0;
-            margin-top: 3px;
-        }
-
-        .msg-box.success {
-            background: #e1f3f0;
-            color: #0b4b4b;
-            border-color: #06C755;
-        }
-
-        .msg-box.success i {
-            color: #06C755;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.error {
-            background: #fee8e8;
-            color: #a13030;
-            border-color: #c6363c;
-        }
-
-        .msg-box.error i {
-            color: #c6363c;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.warning {
-            background: #fff8e1;
-            color: #6d4c00;
-            border-color: #ffa000;
-        }
-
-        .msg-box.warning i {
-            color: #ffa000;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.info {
-            background: #e3f2fd;
-            color: #0d47a1;
-            border-color: #2196f3;
-        }
-
-        .msg-box.info i {
-            color: #2196f3;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.loading {
-            background: #eef6f8;
-            color: #1c4f5e;
-            border-color: #06C755;
-        }
-
-        .msg-box.loading i {
-            color: #06C755;
-            font-size: 1.6rem;
-        }
-
-        .card {
-            display: none;
-        }
-
-        .card.show {
-            display: block;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            max-width: 300px;
-        }
-
-        .loading-content i {
-            font-size: 3rem;
-            color: #06C755;
-            margin-bottom: 15px;
-        }
-
-        .loading-content h3 {
-            color: #0b3b4b;
-            margin-bottom: 10px;
-        }
-
-        .loading-content p {
-            color: #6f8f9a;
-            font-size: 0.9rem;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            font-size: 0.8rem;
-            color: #8aa8b2;
-        }
-
-        .footer i {
-            color: #06C755;
-        }
-
-        @media (max-width: 550px) {
-            .container {
-                padding: 28px 18px;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .form-group input {
-                padding-left: 40px;
-                font-size: 0.95rem;
-            }
-        }
+        .msg-box.show { display: flex; }
+        .msg-box.error { background: #fee8e8; color: #a13030; border-color: #c6363c; }
+        .msg-box.success { background: #e1f3f0; color: #0b4b4b; border-color: #06C755; }
+        .msg-box i { font-size: 1.6rem; }
     </style>
 </head>
-
 <body>
     <div class="container">
         <div class="header">
@@ -356,378 +78,88 @@
                 <i class="fab fa-line"></i>
             </div>
             <h1>ลงทะเบียนสมาชิก</h1>
-            <p>กรอกข้อมูลเพื่อสมัครสมาชิกและเชื่อมต่อ LINE อัตโนมัติ</p>
-            <div class="divider"></div>
+            <p>กรอกข้อมูลเพื่อสมัครสมาชิกและเชื่อมต่อ LINE</p>
         </div>
 
-        <!-- ขั้นตอนที่ 1: กรอกข้อมูลลงทะเบียน -->
-        <div id="step1" class="card show">
-            <form id="myForm" novalidate>
-                <div class="form-group">
-                    <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
-                    <input type="tel" id="phone" name="phone" placeholder="0812345678" pattern="[0-9]{10}" maxlength="10" required inputmode="numeric" autocomplete="tel">
-                    <i class="fas fa-phone-alt input-icon"></i>
-                    <div id="phoneHint" class="validation-hint"></div>
-                </div>
+        <form id="myForm" novalidate>
+            <div class="form-group">
+                <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
+                <input type="tel" id="phone" placeholder="0812345678" maxlength="10" required>
+                <i class="fas fa-phone-alt input-icon"></i>
+            </div>
 
-                <div class="form-group">
-                    <label for="birthday"><i class="fas fa-birthday-cake"></i> วันเกิด</label>
-                    <input type="date" id="birthday" name="birthday" required min="1900-01-01">
-                    <i class="fas fa-birthday-cake input-icon"></i>
-                    <div id="birthdayHint" class="validation-hint"></div>
-                </div>
+            <div class="form-group">
+                <label for="birthday"><i class="fas fa-birthday-cake"></i> วันเกิด</label>
+                <input type="date" id="birthday" required>
+                <i class="fas fa-birthday-cake input-icon"></i>
+            </div>
 
-                <div id="formError" class="msg-box error" style="margin-top: 0; margin-bottom: 15px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="formErrorText"></span>
-                </div>
+            <div id="formError" class="msg-box error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="formErrorText"></span>
+            </div>
 
-                <button type="submit" class="btn btn-primary" id="sub">
-                    <i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE
-                </button>
-            </form>
-        </div>
-
-        <div class="footer">
-            <i class="fas fa-shield-alt"></i> ข้อมูลของคุณจะถูกเก็บเป็นความลับ
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <i class="fab fa-line fa-spin"></i>
-            <h3 id="loadingTitle">กำลังเชื่อมต่อ LINE...</h3>
-            <p id="loadingText">กรุณารอสักครู่</p>
-        </div>
+            <button type="submit" class="btn btn-primary" id="sub">
+                <i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE
+            </button>
+        </form>
     </div>
 
     <script>
-        // ============================================================
-        //  ตั้งค่า: URL ของ Web App (GAS) ที่ใช้เป็น API endpoint
-        //  *** ต้องตรงกับ URL ที่ deploy จริง (ลงท้ายด้วย /exec) ***
-        // ============================================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec".trim();
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
-        // ============================================================
-        //  LINE Login Configuration
-        //  Channel ID ของคุณ: 2000688983
-        //  *** Callback URL นี้ต้องเพิ่มไว้ใน LINE Developers Console
-        //      (LINE Login channel > Callback URL) ให้ตรงตัวอักษรทุกตัว ***
-        // ============================================================
-        const LINE_CHANNEL_ID = "2000688983".trim();
-        // .trim() กัน whitespace/ขึ้นบรรทัดใหม่แฝง ซึ่งทำให้ redirect_uri
-        // ที่ส่งไปจริงไม่ตรงกับที่ลงทะเบียนไว้ใน LINE Console แบบมองไม่เห็นด้วยตา
-        const LINE_CALLBACK_URL = WEB_APP_URL.trim();
-
-        const form = document.getElementById("myForm");
-        const subBtn = document.getElementById("sub");
-        const formError = document.getElementById("formError");
-        const formErrorText = document.getElementById("formErrorText");
-        const phoneHint = document.getElementById("phoneHint");
-        const birthdayHint = document.getElementById("birthdayHint");
-        const loadingOverlay = document.getElementById("loadingOverlay");
-        const loadingTitle = document.getElementById("loadingTitle");
-        const loadingText = document.getElementById("loadingText");
-        const subBtnDefaultHtml = subBtn.innerHTML;
-
-        // ============================================================
-        //  ตั้งค่า max date สำหรับวันเกิด (วันนี้) - เดิมล็อกไว้ปี 2025 ตายตัว
-        // ============================================================
-        document.getElementById("birthday").max = new Date().toISOString().split('T')[0];
-
-        // ============================================================
-        //  ตรวจสอบค่าตั้งต้นตอนโหลดหน้า + แสดง redirect_uri ที่จะใช้จริง
-        //  ทาง Console เพื่อให้ copy ไปเทียบกับ Callback URL ใน
-        //  LINE Developers Console ได้แบบ 1:1 (สาเหตุ 400 ที่พบบ่อยที่สุด
-        //  คือ redirect_uri ไม่ตรงกันแบบมองไม่เห็นด้วยตา เช่น มีช่องว่าง
-        //  หรือ URL คนละเวอร์ชัน deployment)
-        // ============================================================
-        (function checkConfig() {
-            const problems = [];
-            if (!WEB_APP_URL) problems.push('WEB_APP_URL ว่างเปล่า');
-            if (!LINE_CHANNEL_ID) problems.push('LINE_CHANNEL_ID ว่างเปล่า');
-            if (WEB_APP_URL && !/^https:\/\//.test(WEB_APP_URL)) problems.push('WEB_APP_URL ต้องขึ้นต้นด้วย https://');
-
-            if (problems.length) {
-                console.error('[CONFIG ERROR]', problems.join(', '));
-            }
-
-            console.log('%c[LINE Login Debug]', 'font-weight:bold;color:#06C755;');
-            console.log('redirect_uri ที่จะใช้จริง (ต้องตรงกับ Callback URL ใน LINE Developers Console แบบเป๊ะๆ ทุกตัวอักษร):');
-            console.log(LINE_CALLBACK_URL);
-        })();
-
-        // ============================================================
-        //  ตรวจสอบเบอร์โทรศัพท์
-        //  แก้ไข: เดิม regex รับ +66 ได้ แต่ input listener บังคับกรอกได้
-        //  แค่ตัวเลข 10 หลักขึ้นต้นด้วย 0 เท่านั้น ทำให้ validate ไม่ตรงกัน
-        //  จึงปรับ regex ให้สอดคล้องกับสิ่งที่ผู้ใช้กรอกได้จริง
-        // ============================================================
-        function validatePhone(phone) {
-            const cleanPhone = phone.replace(/[\s-]/g, '');
-            return /^0\d{9}$/.test(cleanPhone);
-        }
-
-        // ============================================================
-        //  ตรวจสอบวันเกิด
-        // ============================================================
-        function validateBirthday(birthday) {
-            if (!birthday) {
-                return { valid: false, message: 'กรุณาเลือกวันเกิด' };
-            }
-
-            const birthDate = new Date(birthday);
-            if (isNaN(birthDate.getTime())) {
-                return { valid: false, message: 'รูปแบบวันเกิดไม่ถูกต้อง' };
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            birthDate.setHours(0, 0, 0, 0);
-
-            if (birthDate > today) {
-                return { valid: false, message: 'วันเกิดไม่สามารถเป็นวันที่ในอนาคตได้' };
-            }
-
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            const dayDiff = today.getDate() - birthDate.getDate();
-
-            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-                age--;
-            }
-
-            if (age < 1) {
-                return { valid: false, message: 'อายุต้องมากกว่า 1 ปี' };
-            }
-
-            if (age > 120) {
-                return { valid: false, message: 'กรุณาตรวจสอบวันเกิดให้ถูกต้อง (อายุเกิน 120 ปี)' };
-            }
-
-            const minYear = 1900;
-            if (birthDate.getFullYear() < minYear) {
-                return { valid: false, message: 'กรุณาตรวจสอบปีเกิดให้ถูกต้อง (ต้องไม่ก่อนปี ค.ศ. ' + minYear + ')' };
-            }
-
-            return { valid: true, age: age, message: 'อายุ: ' + age + ' ปี' };
-        }
-
-        // ============================================================
-        //  เรียก API ฝั่งเซิร์ฟเวอร์ (GAS)
-        // ============================================================
-        function callServer(method, args, onSuccess, onFailure) {
-            if (!WEB_APP_URL) {
-                onFailure(new Error('กรุณาตั้งค่า WEB_APP_URL (URL ของ Web App)'));
-                return;
-            }
-
-            const fd = new FormData();
-            if (method === 'clientRegister') {
-                fd.append('action', 'register');
-                fd.append('phone', args[0]);
-                fd.append('birthday', args[1]);
-            }
-
-            fetch(WEB_APP_URL, { method: 'POST', body: fd })
-                .then(function(res) {
-                    if (!res.ok) {
-                        throw new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')');
-                    }
-                    return res.text();
-                })
-                .then(function(text) {
-                    let res;
-                    try {
-                        res = JSON.parse(text);
-                    } catch (err) {
-                        onFailure(new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง'));
-                        return;
-                    }
-                    onSuccess(res);
-                })
-                .catch(function(err) {
-                    onFailure(err);
-                });
-        }
-
-        // ============================================================
-        //  สร้าง URL สำหรับ LINE Login
-        // ============================================================
-        function createLineLoginUrl(state) {
-            const params = new URLSearchParams({
-                response_type: 'code',
-                client_id: LINE_CHANNEL_ID,
-                redirect_uri: LINE_CALLBACK_URL,
-                state: state,
-                scope: 'profile openid',
-                bot_prompt: 'aggressive'
-            });
-
-            return 'https://access.line.me/oauth2/v2.1/authorize?' + params.toString();
-        }
-
-        // ============================================================
-        //  ขั้นตอนที่ 1: ลงทะเบียนและเชื่อมต่อ LINE
-        // ============================================================
-        form.addEventListener("submit", function(e) {
+        document.getElementById("myForm").addEventListener("submit", function(e) {
             e.preventDefault();
-
+            
             const phone = document.getElementById("phone").value.trim();
             const birthday = document.getElementById("birthday").value;
-
-            hideFormError();
-
-            // ตรวจสอบข้อมูล
-            if (!phone) {
-                showFormError('กรุณากรอกเบอร์โทรศัพท์');
-                document.getElementById("phone").focus();
-                setInputStatus(document.getElementById("phone"), 'invalid');
+            
+            if (!phone || phone.length < 10) {
+                showError('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง');
                 return;
             }
-
-            if (!validatePhone(phone)) {
-                showFormError('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ตัวอย่าง: 0812345678)');
-                document.getElementById("phone").focus();
-                setInputStatus(document.getElementById("phone"), 'invalid');
+            
+            if (!birthday) {
+                showError('กรุณาเลือกวันเกิด');
                 return;
             }
-
-            const birthdayValidation = validateBirthday(birthday);
-            if (!birthdayValidation.valid) {
-                showFormError(birthdayValidation.message);
-                document.getElementById("birthday").focus();
-                setInputStatus(document.getElementById("birthday"), 'invalid');
-                return;
-            }
-
-            // แสดง Loading
-            subBtn.disabled = true;
-            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังลงทะเบียน...';
-            loadingTitle.textContent = 'กำลังลงทะเบียน...';
-            loadingText.textContent = 'กรุณารอสักครู่';
-            loadingOverlay.classList.add('show');
-
-            // ลงทะเบียนผ่าน GAS
-            callServer('clientRegister', [phone, birthday],
-                function(res) {
-                    if (res && res.status === 'ok') {
-                        // ลงทะเบียนสำเร็จ
-                        const regToken = res.token || '';
-
-                        // สร้าง state สำหรับ LINE Login
-                        const lineState = 'reg_' + regToken + '_' + phone;
-
-                        // อัปเดตข้อความ Loading
-                        loadingTitle.textContent = 'กำลังเชื่อมต่อ LINE...';
-                        loadingText.textContent = 'กรุณาเข้าสู่ระบบ LINE เพื่อยืนยันตัวตน';
-
+            
+            const btn = document.getElementById("sub");
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+            
+            // ส่งข้อมูลไป GAS เพื่อลงทะเบียนและรับ URL สำหรับ LINE Login
+            const fd = new FormData();
+            fd.append('action', 'registerAndGetLineLoginUrl');
+            fd.append('phone', phone);
+            fd.append('birthday', birthday);
+            
+            fetch(WEB_APP_URL, { method: 'POST', body: fd })
+                .then(res => res.text())
+                .then(text => {
+                    const res = JSON.parse(text);
+                    
+                    if (res.status === 'ok' && res.lineLoginUrl) {
                         // Redirect ไปยัง LINE Login
-                        setTimeout(function() {
-                            const lineLoginUrl = createLineLoginUrl(lineState);
-                            console.log('[LINE Login] กำลังไปที่:', lineLoginUrl);
-                            console.log('[LINE Login] redirect_uri ที่ส่งไป:', LINE_CALLBACK_URL);
-                            window.location.href = lineLoginUrl;
-                        }, 800);
-
+                        window.location.href = res.lineLoginUrl;
                     } else {
-                        subBtn.disabled = false;
-                        subBtn.innerHTML = subBtnDefaultHtml;
-                        loadingOverlay.classList.remove('show');
-                        showFormError((res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE';
+                        showError(res.error || 'เกิดข้อผิดพลาด');
                     }
-                },
-                function(err) {
-                    subBtn.disabled = false;
-                    subBtn.innerHTML = subBtnDefaultHtml;
-                    loadingOverlay.classList.remove('show');
-                    showFormError(err.message);
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fab fa-line"></i> ลงทะเบียนและเชื่อมต่อ LINE';
+                    showError('เกิดข้อผิดพลาด: ' + err.message);
                 });
         });
-
-        // ============================================================
-        //  Helper Functions
-        // ============================================================
-        function showFormError(text) {
-            formError.className = 'msg-box show error';
-            formErrorText.textContent = text;
+        
+        function showError(text) {
+            const errorBox = document.getElementById("formError");
+            errorBox.className = 'msg-box show error';
+            document.getElementById("formErrorText").textContent = text;
         }
-
-        function hideFormError() {
-            formError.className = 'msg-box error';
-            formErrorText.textContent = '';
-        }
-
-        function setInputStatus(inputElement, status) {
-            if (status === 'valid') {
-                inputElement.classList.remove('invalid');
-                inputElement.classList.add('valid');
-            } else if (status === 'invalid') {
-                inputElement.classList.remove('valid');
-                inputElement.classList.add('invalid');
-            } else {
-                inputElement.classList.remove('valid', 'invalid');
-            }
-        }
-
-        function showHint(element, message, type = '') {
-            element.textContent = message;
-            element.className = 'validation-hint ' + type;
-        }
-
-        function hideHint(element) {
-            element.textContent = '';
-            element.className = 'validation-hint';
-        }
-
-        // ============================================================
-        //  Event Listeners
-        // ============================================================
-
-        document.getElementById('phone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value.length > 10) {
-                value = value.slice(0, 10);
-            }
-            e.target.value = value;
-
-            if (value.length === 0) {
-                setInputStatus(e.target, '');
-                hideHint(phoneHint);
-            } else if (value.length === 10 && validatePhone(value)) {
-                setInputStatus(e.target, 'valid');
-                showHint(phoneHint, '✓ เบอร์โทรศัพท์ถูกต้อง', 'success');
-            } else if (value.length < 10) {
-                setInputStatus(e.target, 'invalid');
-                showHint(phoneHint, 'กรุณากรอกเบอร์ให้ครบ 10 หลัก', 'error');
-            } else {
-                setInputStatus(e.target, 'invalid');
-                showHint(phoneHint, 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0)', 'error');
-            }
-        });
-
-        document.getElementById('birthday').addEventListener('change', function(e) {
-            const birthday = e.target.value;
-            const validation = validateBirthday(birthday);
-
-            if (!validation.valid) {
-                setInputStatus(e.target, 'invalid');
-                showHint(birthdayHint, '✗ ' + validation.message, 'error');
-            } else {
-                setInputStatus(e.target, 'valid');
-                showHint(birthdayHint, '✓ ' + validation.message, 'success');
-            }
-        });
-
-        document.getElementById('phone').addEventListener('focus', function() {
-            hideFormError();
-        });
-
-        document.getElementById('birthday').addEventListener('focus', function() {
-            hideFormError();
-        });
     </script>
 </body>
-
 </html>
