@@ -29,7 +29,7 @@
     }
     button {
       width: 100%;
-      margin-top: 24px;
+      margin-top: 16px;
       padding: 14px;
       border: none;
       border-radius: 8px;
@@ -39,38 +39,58 @@
       font-weight: 600;
       cursor: pointer;
     }
+    button.secondary { background: #333; }
     button:disabled { background: #aaa; }
     #status { margin-top: 12px; font-size: 13px; color: #999; text-align: center; }
+    #linkStep { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+    #linkStep h3 { font-size: 15px; margin: 0 0 8px; }
+    #linkStep p { font-size: 13px; color: #666; line-height: 1.5; margin: 0 0 4px; }
+    #fallback { display: none; margin-top: 16px; padding: 16px; background: #f0f0f0; border-radius: 10px; }
+    #fallback p { font-size: 13px; color: #555; margin: 0 0 8px; }
+    #fallbackMessage { font-weight: 600; font-size: 15px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>ลงทะเบียนสมาชิก</h2>
 
-    <label>เบอร์โทรศัพท์</label>
-    <input id="phone" type="tel" placeholder="0812345678">
+    <div id="registerForm">
+      <label>เบอร์โทรศัพท์</label>
+      <input id="phone" type="tel" placeholder="0812345678">
 
-    <label>วันเกิด</label>
-    <input id="birthday" type="date">
+      <label>วันเกิด</label>
+      <input id="birthday" type="date">
 
-    <button id="submitBtn">ลงทะเบียน</button>
+      <button id="submitBtn">ลงทะเบียน</button>
+    </div>
+
     <div id="status"></div>
 
+    <!-- ขั้นที่ 2: ปรากฏหลังลงทะเบียนสำเร็จ -->
+    <div id="linkStep">
+      <h3>ขั้นตอนถัดไป</h3>
+      <p>กดปุ่มด้านล่างเพื่อยืนยันผูกบัญชีสมาชิกกับ LINE ของคุณ</p>
+      <button id="linkBtn">ยืนยันผูกบัญชีสมาชิก LINE</button>
+    </div>
+
     <!-- แสดงเมื่อ auto-fill ข้อความใน LINE ไม่ทำงาน (เช่น LINE Desktop App) -->
-    <div id="fallback" style="display:none; margin-top:20px; padding:16px; background:#f0f0f0; border-radius:10px;">
-      <div style="font-size:13px; color:#555; margin-bottom:8px;">
-        ถ้าเปิด LINE แล้วห้องแชทว่าง ไม่มีข้อความ ให้กดคัดลอกข้อความนี้แล้ววางส่งในแชทเอง:
-      </div>
-      <div id="fallbackMessage" style="font-weight:600; font-size:15px; margin-bottom:10px;"></div>
-      <button id="copyBtn" style="background:#333;">คัดลอกข้อความ</button>
+    <div id="fallback">
+      <p>ถ้าเปิด LINE แล้วห้องแชทว่าง ไม่มีข้อความ ให้กดคัดลอกข้อความนี้แล้ววางส่งในแชทเอง:</p>
+      <div id="fallbackMessage"></div>
+      <button id="copyBtn" class="secondary">คัดลอกข้อความ</button>
     </div>
   </div>
 
   <script>
     // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ลงท้ายด้วย /exec)
-    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec;
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/exec';
 
+    let regToken = '';
     let pendingMessage = '';
+
+    function setStatus(text) {
+      document.getElementById('status').textContent = text;
+    }
 
     function copyMessage() {
       navigator.clipboard.writeText(pendingMessage).then(function () {
@@ -80,19 +100,26 @@
       });
     }
 
+    function showChatStep(oaLink, message) {
+      pendingMessage = message;
+      document.getElementById('fallbackMessage').textContent = message;
+      document.getElementById('fallback').style.display = 'block';
+      window.location.href = oaLink;
+    }
+
+    // ขั้นที่ 1: ลงทะเบียน
     function submitForm() {
       const phone = document.getElementById('phone').value.trim();
       const birthday = document.getElementById('birthday').value;
       const btn = document.getElementById('submitBtn');
-      const status = document.getElementById('status');
 
       if (!phone || !birthday) {
-        status.textContent = 'กรุณากรอกข้อมูลให้ครบ';
+        setStatus('กรุณากรอกข้อมูลให้ครบ');
         return;
       }
 
       btn.disabled = true;
-      status.textContent = 'กำลังบันทึกข้อมูล...';
+      setStatus('กำลังบันทึกข้อมูล...');
 
       fetch(GAS_WEB_APP_URL, {
         method: 'POST',
@@ -102,28 +129,63 @@
       })
         .then(function (res) { return res.json(); })
         .then(function (result) {
-          if (result.status !== 'ok') {
-            throw new Error('บันทึกข้อมูลไม่สำเร็จ');
-          }
-          status.textContent = 'สำเร็จ! กำลังพากลับไปที่แชท LINE...';
+          if (result.status !== 'ok') throw new Error('บันทึกข้อมูลไม่สำเร็จ');
 
-          // เตรียมข้อความสำรองไว้ให้คัดลอก เผื่อ auto-fill ไม่ทำงาน
-          pendingMessage = result.message;
-          document.getElementById('fallbackMessage').textContent = result.message;
-          document.getElementById('fallback').style.display = 'block';
-
-          // พาไปที่แชท LINE OA พร้อมข้อความยืนยัน (trigger webhook + replyToken)
-          window.location.href = result.oaLink;
+          regToken = result.token;
+          document.getElementById('registerForm').style.display = 'none';
+          document.getElementById('linkStep').style.display = 'block';
+          setStatus('บันทึกข้อมูลสำเร็จ กรุณากดปุ่มด้านล่างเพื่อยืนยันผูกบัญชี');
         })
         .catch(function (err) {
           btn.disabled = false;
-          status.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+          setStatus('เกิดข้อผิดพลาด: ' + err.message);
         });
     }
 
-    // ผูก event ตรงนี้แทนการใช้ onclick="..." ในแท็ก HTML
-    // (บาง host / CMS / iframe preview จะบล็อก inline event handler ด้วย CSP)
+    // ขั้นที่ 2: ยืนยันผูกบัญชี LINE
+    // - ถ้ายังไม่เคยแชทกับ OA มาก่อน -> เด้งไปแชทก่อน (ตั้งค่า userId ในระบบ)
+    // - ถ้าแชทแล้ว -> ออก linkToken จริง แล้วเด้งไปหน้าจอผูกบัญชีของ LINE
+    function requestLink() {
+      const btn = document.getElementById('linkBtn');
+      btn.disabled = true;
+      setStatus('กำลังออก linkToken และสร้างการผูกบัญชี...');
+
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'requestLink', token: regToken })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (result) {
+          btn.disabled = false;
+
+          if (result.status === 'needChat') {
+            setStatus('กรุณายืนยันตัวตนในแชท LINE ก่อน แล้วค่อยกลับมากดปุ่มนี้อีกครั้ง');
+            showChatStep(result.oaLink, result.message);
+            return;
+          }
+
+          if (result.status === 'ok') {
+            setStatus('กำลังเปิดหน้าต่างผูกบัญชีกับ LINE...');
+            window.location.href = result.accountLinkUrl;
+            return;
+          }
+
+          if (result.status === 'notfound') {
+            setStatus('ไม่พบข้อมูลการลงทะเบียน กรุณาลงทะเบียนใหม่');
+            return;
+          }
+
+          setStatus(result.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          setStatus('เกิดข้อผิดพลาด: ' + err.message);
+        });
+    }
+
     document.getElementById('submitBtn').addEventListener('click', submitForm);
+    document.getElementById('linkBtn').addEventListener('click', requestLink);
     document.getElementById('copyBtn').addEventListener('click', copyMessage);
   </script>
 </body>
