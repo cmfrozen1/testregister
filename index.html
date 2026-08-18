@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
   <style>
     body {
       font-family: -apple-system, "Segoe UI", sans-serif;
@@ -58,6 +58,9 @@
   </div>
 
   <script>
+    // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ลงท้ายด้วย /exec)
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec';
+
     function submitForm() {
       const phone = document.getElementById('phone').value.trim();
       const birthday = document.getElementById('birthday').value;
@@ -72,17 +75,25 @@
       btn.disabled = true;
       status.textContent = 'กำลังบันทึกข้อมูล...';
 
-      google.script.run
-        .withSuccessHandler(function (result) {
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        // ใช้ text/plain เพื่อเลี่ยง CORS preflight (GAS Web App ไม่รองรับ OPTIONS)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'register', phone: phone, birthday: birthday })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (result) {
+          if (result.status !== 'ok') {
+            throw new Error('บันทึกข้อมูลไม่สำเร็จ');
+          }
           status.textContent = 'สำเร็จ! กำลังพากลับไปที่แชท LINE...';
           // พาไปที่แชท LINE OA พร้อมข้อความยืนยัน (trigger webhook + replyToken)
-          window.top.location.href = result.oaLink;
+          window.location.href = result.oaLink;
         })
-        .withFailureHandler(function (err) {
+        .catch(function (err) {
           btn.disabled = false;
           status.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
-        })
-        .submitRegistration(phone, birthday);
+        });
     }
   </script>
 </body>
