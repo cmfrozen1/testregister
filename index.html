@@ -410,11 +410,10 @@
 
         // ============================================================
         //  LINE Login Configuration
-        //  ต้องใส่ค่า LINE Channel ID จริง (ตัวเลข 10 หลัก)
-        //  ดูได้จาก LINE Developers Console
+        //  Channel ID ของคุณ: 2000688983
         // ============================================================
-        const LINE_CHANNEL_ID = "1657123456"; // ตัวอย่าง: ใส่ Channel ID จริงของคุณ (ตัวเลข 10 หลัก)
-        const LINE_CALLBACK_URL = WEB_APP_URL; // ใช้ URL เดียวกับ GAS Web App
+        const LINE_CHANNEL_ID = "2000688983";
+        const LINE_CALLBACK_URL = WEB_APP_URL;
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -584,6 +583,7 @@
                         // Redirect ไปยัง LINE Login
                         setTimeout(function() {
                             const lineLoginUrl = createLineLoginUrl(lineState);
+                            console.log('LINE Login URL:', lineLoginUrl);
                             window.location.href = lineLoginUrl;
                         }, 1000);
                         
