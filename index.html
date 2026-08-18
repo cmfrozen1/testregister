@@ -47,7 +47,7 @@
         }
 
         .header .icon-circle {
-            background: linear-gradient(135deg, #1f7a8c, #0e4d5e);
+            background: linear-gradient(135deg, #06C755, #05a344);
             width: 75px;
             height: 75px;
             border-radius: 50%;
@@ -55,7 +55,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            box-shadow: 0 10px 25px rgba(31, 122, 140, 0.4);
+            box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4);
         }
 
         .header .icon-circle i {
@@ -78,7 +78,7 @@
 
         .header .divider {
             height: 3px;
-            background: linear-gradient(to right, transparent, #1f7a8c, transparent);
+            background: linear-gradient(to right, transparent, #06C755, transparent);
             width: 80px;
             margin: 12px auto 0;
             border-radius: 5px;
@@ -99,7 +99,7 @@
 
         .form-group label i {
             margin-right: 8px;
-            color: #1f7a8c;
+            color: #06C755;
             width: 20px;
         }
 
@@ -116,9 +116,9 @@
         }
 
         .form-group input:focus {
-            border-color: #1f7a8c;
+            border-color: #06C755;
             background: #ffffff;
-            box-shadow: 0 0 0 5px rgba(31, 122, 140, 0.12);
+            box-shadow: 0 0 0 5px rgba(6, 199, 85, 0.12);
         }
 
         .form-group .input-icon {
@@ -132,7 +132,7 @@
         }
 
         .form-group input:focus~.input-icon {
-            color: #1f7a8c;
+            color: #06C755;
         }
 
         .form-group input.valid {
@@ -201,18 +201,6 @@
             box-shadow: 0 12px 30px rgba(6, 199, 85, 0.45);
         }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #1f7a8c;
-            color: #1f7a8c;
-        }
-
-        .btn-outline:hover:not(:disabled) {
-            background: #1f7a8c;
-            color: white;
-            box-shadow: 0 6px 18px rgba(31, 122, 140, 0.3);
-        }
-
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -244,11 +232,11 @@
         .msg-box.success {
             background: #e1f3f0;
             color: #0b4b4b;
-            border-color: #1f7a8c;
+            border-color: #06C755;
         }
 
         .msg-box.success i {
-            color: #1f7a8c;
+            color: #06C755;
             font-size: 1.6rem;
         }
 
@@ -288,11 +276,11 @@
         .msg-box.loading {
             background: #eef6f8;
             color: #1c4f5e;
-            border-color: #1f7a8c;
+            border-color: #06C755;
         }
 
         .msg-box.loading i {
-            color: #1f7a8c;
+            color: #06C755;
             font-size: 1.6rem;
         }
 
@@ -304,139 +292,64 @@
             display: block;
         }
 
-        .token-box {
+        .progress-container {
             background: #f0f6f8;
-            border: 2px dashed #9fc2cc;
             border-radius: 16px;
-            padding: 14px 18px;
+            padding: 20px;
             margin: 14px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
         }
 
-        .token-box .token {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #0b3b4b;
-            letter-spacing: 2px;
-            font-family: Consolas, monospace;
-            word-break: break-all;
-        }
-
-        .token-box .copy-btn {
-            flex-shrink: 0;
-            background: #1f7a8c;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .token-box .copy-btn:hover {
-            background: #0e4d5e;
-        }
-
-        .step-hint {
-            background: #eef6f8;
-            border-radius: 16px;
-            padding: 14px 18px;
-            margin: 14px 0;
-            color: #1c4f5e;
-            font-size: 0.92rem;
-            line-height: 1.6;
-        }
-
-        .step-hint code {
-            display: block;
-            background: #0b3b4b;
-            color: #7fe0c0;
-            padding: 8px 14px;
-            border-radius: 10px;
-            margin-top: 8px;
-            font-size: 0.95rem;
-            word-break: break-all;
-        }
-
-        .steps-list {
+        .progress-steps {
             list-style: none;
             padding: 0;
-            margin: 10px 0;
+            margin: 0;
         }
 
-        .steps-list li {
-            padding: 8px 0;
+        .progress-steps li {
+            padding: 10px 0;
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
+            align-items: center;
+            gap: 12px;
             transition: all 0.3s ease;
+            opacity: 0.3;
         }
 
-        .steps-list li i {
-            color: #1f7a8c;
-            margin-top: 3px;
-            width: 20px;
-            text-align: center;
+        .progress-steps li.active {
+            opacity: 1;
+        }
+
+        .progress-steps li.completed {
+            opacity: 0.7;
+        }
+
+        .progress-steps li i {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dce8ec;
+            color: #6f8f9a;
             flex-shrink: 0;
+            font-size: 0.9rem;
         }
 
-        .steps-list li.completed {
-            opacity: 0.5;
-            text-decoration: line-through;
-        }
-
-        .steps-list li.completed i {
-            color: #28a745 !important;
-        }
-
-        .steps-list li.active {
-            background: #fff3cd;
-            border-radius: 8px;
-            padding-left: 8px;
-        }
-
-        .steps-list li.active i {
+        .progress-steps li.active i {
+            background: #06C755;
+            color: white;
             animation: pulse 1.5s infinite;
+        }
+
+        .progress-steps li.completed i {
+            background: #28a745;
+            color: white;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
-        }
-
-        .divider {
-            text-align: center;
-            color: #8aa8b2;
-            font-size: 0.8rem;
-            margin: 18px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #dce8ec;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            font-size: 0.8rem;
-            color: #8aa8b2;
-        }
-
-        .footer i {
-            color: #1f7a8c;
         }
 
         .auto-check-timer {
@@ -464,6 +377,17 @@
             100% { transform: rotate(360deg); }
         }
 
+        .footer {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.8rem;
+            color: #8aa8b2;
+        }
+
+        .footer i {
+            color: #06C755;
+        }
+
         @media (max-width: 550px) {
             .container {
                 padding: 28px 18px;
@@ -485,10 +409,10 @@
     <div class="container">
         <div class="header">
             <div class="icon-circle">
-                <i class="fas fa-user-plus"></i>
+                <i class="fab fa-line"></i>
             </div>
             <h1>ลงทะเบียนสมาชิก</h1>
-            <p>กรอกข้อมูลเพื่อสมัครสมาชิกและเชื่อมต่อกับ LINE</p>
+            <p>กรอกข้อมูลเพื่อสมัครสมาชิกและเชื่อมต่อกับ LINE อัตโนมัติ</p>
             <div class="divider"></div>
         </div>
 
@@ -515,53 +439,46 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="sub">
-                    <i class="fab fa-line"></i> ยืนยันและเชื่อมต่อกับ LINE OA
+                    <i class="fab fa-line"></i> ยืนยันและเชื่อมต่อ LINE อัตโนมัติ
                 </button>
             </form>
         </div>
 
-        <!-- ขั้นตอนที่ 2: ยืนยันผ่าน LINE + ผูกบัญชี -->
+        <!-- ขั้นตอนที่ 2: กำลังเชื่อมต่อ -->
         <div id="step2" class="card">
             <div class="msg-box show success">
                 <i class="fas fa-check-circle"></i>
-                <span id="step2Title">ลงทะเบียนสำเร็จ! กำลังเปิดแชท LINE...</span>
+                <span>ลงทะเบียนสำเร็จ! กำลังเชื่อมต่อกับ LINE...</span>
             </div>
 
-            <div class="step-hint">
-                <b>ขั้นตอนการยืนยันตัวตน:</b>
-                <ul class="steps-list" id="stepsList">
-                    <li id="step1Item" class="completed">
-                        <i class="fas fa-check-circle"></i>
-                        <span><b>ขั้นตอนที่ 1:</b> ลงทะเบียนและรับรหัสยืนยัน</span>
+            <div class="progress-container">
+                <b>สถานะการเชื่อมต่อ:</b>
+                <ul class="progress-steps" id="progressSteps">
+                    <li id="progressStep1" class="completed">
+                        <i class="fas fa-check"></i>
+                        <span>ลงทะเบียนสมาชิก</span>
                     </li>
-                    <li id="step2Item">
-                        <i class="fab fa-line"></i>
-                        <span><b>ขั้นตอนที่ 2:</b> ส่งข้อความยืนยันในแชท LINE</span>
+                    <li id="progressStep2" class="active">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>กำลังเปิดแชท LINE OA...</span>
                     </li>
-                    <li id="step3Item">
-                        <i class="fas fa-check-circle"></i>
-                        <span><b>ขั้นตอนที่ 3:</b> รอระบบตรวจสอบและผูกบัญชีอัตโนมัติ</span>
+                    <li id="progressStep3">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>รอการยืนยันจาก LINE</span>
+                    </li>
+                    <li id="progressStep4">
+                        <i class="fas fa-link"></i>
+                        <span>ผูกบัญชีอัตโนมัติ</span>
                     </li>
                 </ul>
-
-                <b>รหัสยืนยันของคุณ:</b>
-                <div class="token-box">
-                    <span class="token" id="tokenDisplay">-</span>
-                    <button type="button" class="copy-btn" id="copyBtn" onclick="copyToken()">
-                        <i class="fas fa-copy"></i> คัดลอก
-                    </button>
-                </div>
-                
-                <div>ส่งข้อความนี้ไปในแชท LINE OA:</div>
-                <code id="confirmMessage">ยืนยันสมาชิก XXXXXXXX</code>
             </div>
 
-            <a href="#" id="btnOpenChat" target="_blank" rel="noopener" class="btn btn-line">
-                <i class="fab fa-line"></i> เปิดแชทกับ LINE OA อีกครั้ง
+            <a href="#" id="btnOpenChat" target="_blank" rel="noopener" class="btn btn-line" style="display: none;">
+                <i class="fab fa-line"></i> เปิดแชท LINE OA
             </a>
 
             <div class="auto-check-timer" id="autoCheckTimer">
-                <i class="fas fa-sync-alt"></i> ระบบกำลังตรวจสอบสถานะอัตโนมัติทุก 10 วินาที...
+                <i class="fas fa-sync-alt"></i> ระบบกำลังตรวจสอบสถานะอัตโนมัติทุก 5 วินาที...
             </div>
 
             <div id="linkMsg" class="msg-box">
@@ -588,6 +505,7 @@
         let isAutoChecking = false;
         let lastCheckTime = null;
         let checkCount = 0;
+        let hasOpenedChat = false;
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -601,6 +519,7 @@
         const phoneHint = document.getElementById("phoneHint");
         const birthdayHint = document.getElementById("birthdayHint");
         const autoCheckTimer = document.getElementById("autoCheckTimer");
+        const btnOpenChat = document.getElementById("btnOpenChat");
 
         // ============================================================
         //  ตั้งค่า max date สำหรับวันเกิด (วันนี้)
@@ -677,6 +596,10 @@
             } else if (method === 'clientRequestLink') {
                 fd.append('action', 'requestLink');
                 fd.append('token', args[0]);
+            } else if (method === 'clientAutoLink') {
+                fd.append('action', 'autoLink');
+                fd.append('token', args[0]);
+                fd.append('phone', args[1]);
             }
 
             fetch(WEB_APP_URL, { method: 'POST', body: fd })
@@ -697,7 +620,7 @@
         }
 
         // ============================================================
-        //  ขั้นตอนที่ 1: ลงทะเบียนและเปิดแชท LINE
+        //  ขั้นตอนที่ 1: ลงทะเบียนและเชื่อมต่ออัตโนมัติ
         // ============================================================
         form.addEventListener("submit", function(e) {
             e.preventDefault();
@@ -739,22 +662,22 @@
                         regOaLink = res.oaLink || '';
                         regMessage = res.message || ('ยืนยันสมาชิก ' + regToken);
 
-                        document.getElementById("tokenDisplay").textContent = regToken;
-                        document.getElementById("confirmMessage").textContent = regMessage;
-
                         if (regOaLink) {
-                            document.getElementById("btnOpenChat").href = regOaLink;
+                            btnOpenChat.href = regOaLink;
+                            btnOpenChat.style.display = 'flex';
                         }
 
                         hideLinkStatus();
                         step1.classList.remove('show');
                         step2.classList.add('show');
                         
-                        // แสดงข้อความแนะนำ
+                        // แสดงข้อความกำลังเชื่อมต่อ
                         showLinkStatus('info', 
-                            '✅ ลงทะเบียนสำเร็จ!\n\n' +
-                            'ระบบกำลังเปิดแชท LINE OA...\n' +
-                            'กรุณาส่งข้อความยืนยันในแชท'
+                            '🔄 กำลังเชื่อมต่อกับ LINE อัตโนมัติ...\n\n' +
+                            'ระบบจะ:\n' +
+                            '1. เปิดแชท LINE OA\n' +
+                            '2. ส่งรหัสยืนยันอัตโนมัติ\n' +
+                            '3. ตรวจสอบและผูกบัญชีให้อัตโนมัติ'
                         );
                         
                         // เริ่มตรวจสอบสถานะอัตโนมัติ
@@ -764,26 +687,29 @@
                         if (regOaLink) {
                             setTimeout(function() {
                                 window.open(regOaLink, '_blank');
-                            }, 1500);
+                                hasOpenedChat = true;
+                                updateProgressStep(2, 'completed', 'fa-check');
+                                updateProgressStep(3, 'active', 'fa-spinner fa-spin');
+                            }, 1000);
                         }
                         
                         subBtn.disabled = false;
-                        subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อกับ LINE OA';
+                        subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อ LINE อัตโนมัติ';
                     } else {
                         subBtn.disabled = false;
-                        subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อกับ LINE OA';
+                        subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อ LINE อัตโนมัติ';
                         showFormError((res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
                     }
                 },
                 function(err) {
                     subBtn.disabled = false;
-                    subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อกับ LINE OA';
+                    subBtn.innerHTML = '<i class="fab fa-line"></i> ยืนยันและเชื่อมต่อ LINE อัตโนมัติ';
                     showFormError(err.message);
                 });
         });
 
         // ============================================================
-        //  ตรวจสอบสถานะอัตโนมัติ (ทุก 10 วินาที)
+        //  ตรวจสอบสถานะอัตโนมัติ (ทุก 5 วินาที)
         // ============================================================
         function startAutoCheck() {
             if (isAutoChecking) return;
@@ -794,10 +720,10 @@
             // ตรวจสอบครั้งแรกทันที
             checkStatusSilently();
             
-            // ตั้งเวลาตรวจสอบทุก 10 วินาที
+            // ตั้งเวลาตรวจสอบทุก 5 วินาที
             autoCheckInterval = setInterval(function() {
                 checkStatusSilently();
-            }, 10000); // 10 วินาที
+            }, 5000); // 5 วินาที
         }
 
         function stopAutoCheck() {
@@ -820,33 +746,32 @@
                     if (res && res.status === 'ok') {
                         // พบการยืนยันแล้ว
                         stopAutoCheck();
-                        markStepCompleted(2);
-                        markStepCompleted(3);
-                        showLinkStatus('success', '✅ ตรวจพบการยืนยันจาก LINE! ระบบกำลังผูกบัญชีอัตโนมัติ...');
+                        updateProgressStep(3, 'completed', 'fa-check');
+                        updateProgressStep(4, 'active', 'fa-spinner fa-spin');
+                        showLinkStatus('success', '✅ ตรวจพบการยืนยันจาก LINE! กำลังผูกบัญชีอัตโนมัติ...');
                         
-                        // เรียก requestLink เพื่อขอ URL สำหรับผูกบัญชี
+                        // ผูกบัญชีอัตโนมัติ
                         setTimeout(function() {
-                            requestLinkAccount();
+                            autoLinkAccount();
                         }, 1000);
                     } else if (res && res.status === 'needChat') {
-                        // ยังไม่พบ - แสดงข้อความเมื่อตรวจสอบหลายครั้ง
+                        // ยังไม่พบ - แสดงข้อความ
                         if (checkCount === 1) {
                             showLinkStatus('warning', 
                                 '⚠️ ยังไม่พบการยืนยันจาก LINE\n\n' +
-                                'กรุณาทำตามขั้นตอน:\n' +
-                                '1. คัดลอกรหัสยืนยันด้านบน\n' +
-                                '2. วางและส่งข้อความยืนยันในแชท LINE\n' +
-                                '3. ระบบจะตรวจสอบและผูกบัญชีอัตโนมัติ'
+                                'ระบบกำลังรอการยืนยัน:\n' +
+                                '• หากแชท LINE เปิดแล้ว ให้ส่งข้อความใดๆ มาที่แชท\n' +
+                                '• ระบบจะตรวจสอบอัตโนมัติทุก 5 วินาที\n' +
+                                '• เมื่อตรวจพบ จะผูกบัญชีให้อัตโนมัติ'
                             );
-                        } else if (checkCount >= 3 && checkCount % 3 === 0) {
+                        } else if (checkCount % 6 === 0) {
+                            // ทุก 30 วินาที แสดงข้อความเตือน
                             showLinkStatus('warning', 
-                                '⚠️ ยังไม่พบการยืนยันจาก LINE\n\n' +
-                                'กรุณาทำตามขั้นตอน:\n' +
-                                '1. คัดลอกรหัสยืนยันด้านบน\n' +
-                                '2. วางและส่งข้อความยืนยันในแชท LINE\n' +
-                                '3. ระบบจะตรวจสอบและผูกบัญชีอัตโนมัติ\n\n' +
+                                '⏳ ยังรอการยืนยันจาก LINE...\n\n' +
                                 'ตรวจสอบแล้ว: ' + checkCount + ' ครั้ง\n' +
-                                'ตรวจสอบล่าสุด: ' + lastCheckTime.toLocaleTimeString('th-TH')
+                                'เวลาล่าสุด: ' + lastCheckTime.toLocaleTimeString('th-TH') + '\n\n' +
+                                '💡 กรุณาเปิดแชท LINE และส่งข้อความใดๆ\n' +
+                                'ระบบจะดำเนินการต่อให้อัตโนมัติ'
                             );
                         }
                     }
@@ -857,39 +782,32 @@
         }
 
         // ============================================================
-        //  ขอผูกบัญชี LINE
+        //  ผูกบัญชีอัตโนมัติ
         // ============================================================
-        function requestLinkAccount() {
-            if (!regToken) {
-                showLinkStatus('error', 'กรุณาลงทะเบียนก่อน');
-                return;
-            }
-
-            callServer('clientRequestLink', [regToken],
+        function autoLinkAccount() {
+            if (!regToken) return;
+            
+            const phone = document.getElementById("phone").value.trim();
+            
+            callServer('clientAutoLink', [regToken, phone],
                 function(res) {
-                    if (!res) {
-                        showLinkStatus('error', 'เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองอีกครั้ง');
-                        return;
-                    }
-
-                    if (res.status === 'ok' && res.accountLinkUrl) {
-                        showLinkStatus('success', '✅ พบการยืนยันแล้ว! กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
-                        setTimeout(function() {
-                            window.location.href = res.accountLinkUrl;
-                        }, 1500);
-                    } else if (res.status === 'needChat') {
+                    if (res && res.status === 'ok') {
+                        updateProgressStep(4, 'completed', 'fa-check');
+                        showLinkStatus('success', 
+                            '🎉 เชื่อมต่อ LINE สำเร็จ!\n\n' +
+                            'ระบบได้ผูกบัญชีของคุณเรียบร้อยแล้ว\n' +
+                            'คุณสามารถปิดหน้านี้ได้'
+                        );
+                    } else if (res && res.status === 'needChat') {
                         showLinkStatus('warning', 
                             '⚠️ ยังไม่พบการยืนยันจาก LINE\n\n' +
-                            'กรุณาทำตามขั้นตอน:\n' +
-                            '1. คัดลอกรหัสยืนยันด้านบน\n' +
-                            '2. กด "เปิดแชทกับ LINE OA"\n' +
-                            '3. วางและส่งข้อความยืนยันในแชท\n' +
-                            '4. ระบบจะตรวจสอบและผูกบัญชีอัตโนมัติ'
+                            'กรุณาเปิดแชท LINE และส่งข้อความใดๆ\n' +
+                            'ระบบจะตรวจสอบและผูกบัญชีให้อัตโนมัติ'
                         );
-                    } else if (res.status === 'notfound') {
-                        showLinkStatus('error', 'ไม่พบข้อมูลการลงทะเบียนนี้ในระบบ');
-                    } else if (res.status === 'error') {
-                        showLinkStatus('error', res.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                        // เริ่มตรวจสอบใหม่
+                        startAutoCheck();
+                    } else {
+                        showLinkStatus('error', (res && res.error) ? res.error : 'เกิดข้อผิดพลาดในการผูกบัญชี');
                     }
                 },
                 function(err) {
@@ -898,67 +816,22 @@
         }
 
         // ============================================================
-        //  จัดการขั้นตอน
+        //  อัปเดตขั้นตอน
         // ============================================================
-        function markStepCompleted(stepNumber) {
-            const stepItem = document.getElementById('step' + stepNumber + 'Item');
+        function updateProgressStep(stepNumber, status, iconClass) {
+            const stepItem = document.getElementById('progressStep' + stepNumber);
             if (stepItem) {
-                stepItem.classList.add('completed');
-                stepItem.classList.remove('active');
-            }
-        }
-
-        function markStepActive(stepNumber) {
-            const stepItem = document.getElementById('step' + stepNumber + 'Item');
-            if (stepItem) {
-                stepItem.classList.add('active');
+                stepItem.className = status;
+                const icon = stepItem.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas ' + iconClass;
+                }
             }
         }
 
         // ============================================================
         //  Helper Functions
         // ============================================================
-        function copyToken() {
-            const token = regToken || document.getElementById("tokenDisplay").textContent;
-            if (!token) return;
-
-            function done() {
-                const btn = document.getElementById("copyBtn");
-                const old = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
-                setTimeout(function() { btn.innerHTML = old; }, 1500);
-                
-                showLinkStatus('info', 
-                    '✅ คัดลอกรหัสแล้ว!\n\n' +
-                    'ขั้นตอนถัดไป:\n' +
-                    '1. วางรหัสในแชท LINE\n' +
-                    '2. ส่งข้อความ\n' +
-                    '3. ระบบจะตรวจสอบอัตโนมัติ'
-                );
-            }
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(token).then(done).catch(function() {
-                    fallbackCopy(token);
-                    done();
-                });
-            } else {
-                fallbackCopy(token);
-                done();
-            }
-        }
-
-        function fallbackCopy(text) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); } catch (e) {}
-            ta.remove();
-        }
-
         function showLinkStatus(type, text) {
             linkMsg.className = 'msg-box show ' + type;
             
@@ -976,8 +849,7 @@
             
             let formattedText = text
                 .replace(/\n\n/g, '<br><br>')
-                .replace(/\n/g, '<br>')
-                .replace(/(\d)\./g, '<b>$1.</b>');
+                .replace(/\n/g, '<br>');
             
             linkMsgText.innerHTML = formattedText;
         }
@@ -1059,13 +931,14 @@
         });
 
         document.getElementById('btnOpenChat').addEventListener('click', function() {
-            markStepActive(2);
+            hasOpenedChat = true;
+            updateProgressStep(2, 'completed', 'fa-check');
+            updateProgressStep(3, 'active', 'fa-spinner fa-spin');
             showLinkStatus('info', 
                 '📱 กำลังเปิดแชท LINE...\n\n' +
-                'เมื่อเปิดแชทแล้ว:\n' +
-                '1. วางรหัสยืนยันที่คัดลอกไว้\n' +
-                '2. กดส่งข้อความ\n' +
-                '3. ระบบจะตรวจสอบและผูกบัญชีอัตโนมัติ'
+                'เมื่อแชทเปิดแล้ว:\n' +
+                '• ส่งข้อความใดๆ ไปในแชท\n' +
+                '• ระบบจะตรวจสอบและผูกบัญชีอัตโนมัติ'
             );
         });
 
