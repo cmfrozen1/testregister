@@ -1,690 +1,89 @@
 <!DOCTYPE html>
-<html lang="th">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบลงทะเบียน</title>
-
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(145deg, #0f2f3a 0%, #1a5f6e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 20px;
-        }
-
-        .container {
-            max-width: 720px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(10px);
-            border-radius: 35px;
-            padding: 45px 40px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-3px);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header .icon-circle {
-            background: linear-gradient(135deg, #1f7a8c, #0e4d5e);
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            box-shadow: 0 10px 25px rgba(31, 122, 140, 0.4);
-        }
-
-        .header .icon-circle i {
-            font-size: 35px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0b3b4b;
-            letter-spacing: 0.5px;
-        }
-
-        .header p {
-            color: #4b6a74;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-
-        .header .divider {
-            height: 3px;
-            background: linear-gradient(to right, transparent, #1f7a8c, transparent);
-            width: 80px;
-            margin: 12px auto 0;
-            border-radius: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #1c4f5e;
-            font-size: 0.92rem;
-            margin-bottom: 6px;
-        }
-
-        .form-group label i {
-            margin-right: 8px;
-            color: #1f7a8c;
-            width: 20px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 13px 18px 13px 45px;
-            font-size: 1rem;
-            border: 2px solid #dce8ec;
-            border-radius: 30px;
-            background: #f8fbfc;
-            transition: all 0.3s ease;
-            outline: none;
-            color: #0c3b48;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #1f7a8c;
-            background: #ffffff;
-            box-shadow: 0 0 0 5px rgba(31, 122, 140, 0.12);
-        }
-
-        .form-group .input-icon {
-            position: absolute;
-            left: 18px;
-            top: 42px;
-            color: #6f8f9a;
-            font-size: 1.1rem;
-            transition: 0.3s;
-            pointer-events: none;
-        }
-
-        .form-group input:focus~.input-icon,
-        .form-group textarea:focus~.input-icon {
-            color: #1f7a8c;
-        }
-
-        .form-group textarea {
-            padding-top: 15px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-        }
-
-        .form-row .form-group {
-            flex: 1 1 200px;
-        }
-
-        .radio-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px 30px;
-            background: #f0f6f8;
-            padding: 12px 22px;
-            border-radius: 40px;
-            border: 2px solid #dce8ec;
-        }
-
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #1c4f5e;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-
-        .radio-group input[type="radio"] {
-            accent-color: #1f7a8c;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            margin: 0;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            background: #f0f6f8;
-            padding: 14px 22px;
-            border-radius: 40px;
-            border: 2px solid #dce8ec;
-            margin: 6px 0 10px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #1f7a8c;
-            margin-top: 2px;
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-
-        .checkbox-group label {
-            font-weight: 500;
-            color: #1c4f5e;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #1f7a8c, #0e4d5e);
-            border: none;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: 0 8px 20px rgba(31, 122, 140, 0.35);
-        }
-
-        .btn-submit:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2596ab, #0f5a6b);
-            transform: scale(1.02);
-            box-shadow: 0 12px 30px rgba(31, 122, 140, 0.5);
-        }
-
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .msg-box {
-            padding: 14px 20px;
-            border-radius: 30px;
-            margin-top: 18px;
-            display: none;
-            align-items: center;
-            gap: 14px;
-            font-weight: 500;
-            border-left: 5px solid;
-        }
-
-        .msg-box.show {
-            display: flex;
-        }
-
-        .msg-box.success {
-            background: #e1f3f0;
-            color: #0b4b4b;
-            border-color: #1f7a8c;
-        }
-
-        .msg-box.success i {
-            color: #1f7a8c;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.error {
-            background: #fee8e8;
-            color: #a13030;
-            border-color: #c6363c;
-        }
-
-        .msg-box.error i {
-            color: #c6363c;
-            font-size: 1.6rem;
-        }
-
-        .msg-box.loading {
-            background: #eef6f8;
-            color: #1c4f5e;
-            border-color: #1f7a8c;
-        }
-
-        .msg-box.loading i {
-            color: #1f7a8c;
-            font-size: 1.6rem;
-        }
-
-        .line-hint {
-            margin-top: 14px;
-            padding: 10px 18px;
-            border-radius: 30px;
-            background: #eef6f8;
-            color: #1c4f5e;
-            font-size: 0.85rem;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .line-hint.show {
-            display: flex;
-        }
-
-        .count-section {
-            margin-top: 28px;
-            padding-top: 25px;
-            border-top: 2px solid #e2eef2;
-            text-align: center;
-        }
-
-        .count-section .count-number {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #0b3b4b;
-            background: #eef6f8;
-            padding: 8px 30px;
-            border-radius: 50px;
-            display: inline-block;
-            margin: 8px 0 15px;
-            min-width: 80px;
-        }
-
-        .btn-check {
-            background: transparent;
-            border: 2px solid #1f7a8c;
-            color: #1f7a8c;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-check:hover {
-            background: #1f7a8c;
-            color: white;
-            box-shadow: 0 6px 18px rgba(31, 122, 140, 0.3);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            font-size: 0.8rem;
-            color: #8aa8b2;
-        }
-
-        .footer i {
-            color: #1f7a8c;
-        }
-
-        @media (max-width: 550px) {
-            .container {
-                padding: 28px 18px;
-            }
-
-            .header h1 {
-                font-size: 1.6rem;
-            }
-
-            .form-group input,
-            .form-group textarea {
-                padding-left: 40px;
-                font-size: 0.95rem;
-            }
-
-            .radio-group {
-                gap: 12px;
-                padding: 12px 16px;
-            }
-        }
-    </style>
+  <base target="_top">
+  <style>
+    body {
+      font-family: -apple-system, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 24px 16px;
+    }
+    .card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h2 { margin-top: 0; font-size: 20px; }
+    label { display: block; font-size: 13px; color: #666; margin: 16px 0 6px; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #06C755;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { background: #aaa; }
+    #status { margin-top: 12px; font-size: 13px; color: #999; text-align: center; }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="icon-circle">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <h1>ลงทะเบียน</h1>
-            <p>กรอกข้อมูลเพื่อเข้าร่วมกิจกรรม</p>
-            <div class="divider"></div>
-        </div>
+  <div class="card">
+    <h2>ลงทะเบียนสมาชิก</h2>
 
-        <div id="lineHint" class="line-hint">
-            <i class="fab fa-line"></i>
-            <span>กดปุ่ม "ยืนยันผูกบัญชี LINE" เพื่อเชื่อมต่อ LINE เข้ากับ LINE OA — ผูกสำเร็จระบบจะส่ง Flex Message บัตรสมาชิกให้ทันที (ฟรี ไม่เสียโควต้า)</span>
-        </div>
+    <label>เบอร์โทรศัพท์</label>
+    <input id="phone" type="tel" placeholder="0812345678">
 
-        <form id="myForm" novalidate>
-            <!-- ซ่อน userId ของ LINE ที่แนบมาจากลิงก์ -->
-            <input type="hidden" id="lineUserId" name="lineUserId" value="">
+    <label>วันเกิด</label>
+    <input id="birthday" type="date">
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName"><i class="fas fa-user"></i> ชื่อ</label>
-                    <input type="text" id="firstName" name="firstname" placeholder="เช่น สมชาย" required>
-                    <i class="fas fa-user input-icon"></i>
-                </div>
-                <div class="form-group">
-                    <label for="lastName"><i class="fas fa-user-tag"></i> นามสกุล</label>
-                    <input type="text" id="lastName" name="lastname" placeholder="เช่น ใจดี" required>
-                    <i class="fas fa-user-tag input-icon"></i>
-                </div>
-            </div>
+    <button id="submitBtn" onclick="submitForm()">ลงทะเบียน</button>
+    <div id="status"></div>
+  </div>
 
-            <div class="form-group">
-                <label for="email"><i class="fas fa-envelope"></i> อีเมล</label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" required>
-                <i class="fas fa-envelope input-icon"></i>
-            </div>
+  <script>
+    function submitForm() {
+      const phone = document.getElementById('phone').value.trim();
+      const birthday = document.getElementById('birthday').value;
+      const btn = document.getElementById('submitBtn');
+      const status = document.getElementById('status');
 
-            <div class="form-group">
-                <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
-                <input type="tel" id="phone" name="phone" placeholder="081-234-5678" required>
-                <i class="fas fa-phone-alt input-icon"></i>
-            </div>
+      if (!phone || !birthday) {
+        status.textContent = 'กรุณากรอกข้อมูลให้ครบ';
+        return;
+      }
 
-            <div class="form-group">
-                <label><i class="fas fa-venus-mars"></i> เพศ</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="gender" value="ชาย"> ชาย</label>
-                    <label><input type="radio" name="gender" value="หญิง"> หญิง</label>
-                    <label><input type="radio" name="gender" value="ไม่ระบุ" checked> ไม่ระบุ</label>
-                </div>
-            </div>
+      btn.disabled = true;
+      status.textContent = 'กำลังบันทึกข้อมูล...';
 
-            <div class="form-group">
-                <label for="interest"><i class="fas fa-star"></i> ความสนใจ / ข้อความเพิ่มเติม</label>
-                <textarea id="interest" name="interest" placeholder="บอกอะไรเกี่ยวกับตัวคุณ..."></textarea>
-                <i class="fas fa-pen input-icon" style="top: 42px;"></i>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="agree" name="agree" required>
-                <label for="agree">
-                    <i class="fas fa-check-circle"></i> ยอมรับ <strong>ข้อกำหนดและเงื่อนไข</strong>
-                </label>
-            </div>
-
-            <button type="submit" class="btn-submit" id="sub">
-                <i class="fab fa-line"></i> ยืนยันผูกบัญชี LINE
-            </button>
-        </form>
-
-        <div id="msgBox" class="msg-box">
-            <i id="msgIcon" class="fas fa-check-circle"></i>
-            <span id="msgText">ส่งข้อมูลสำเร็จ!</span>
-        </div>
-
-        <!-- ✅ ตามคลิป: หน้าจอ "ตอนนี้ LINE เชื่อมต่อกับ [ระบบ] แล้ว" (ซ่อนไว้ก่อน) -->
-        <div id="connectedPanel" style="display:none; text-align:center;">
-            <div class="header" style="margin-top:15px;">
-                <div class="icon-circle" style="background:linear-gradient(135deg,#06c755,#049e43);">
-                    <i class="fab fa-line"></i>
-                </div>
-                <h1 id="connectedTitle" style="font-size:1.5rem;">ตอนนี้ LINE เชื่อมต่อกับ <span style="color:#06c755;">ระบบสมาชิก</span> แล้ว</h1>
-                <div class="divider"></div>
-                <p style="color:#4b6a74; font-size:0.95rem; margin-top:10px;">คุณสามารถรับข่าวสารและบริการต่างๆ ผ่าน LINE ได้แล้ว</p>
-            </div>
-        </div>
-
-        <!-- ✅ เทคนิคจากคลิป: เปิดแชท LINE OA แล้วพิมพ์ข้อความเพื่อรับบัตรสมาชิก (ฟรี) -->
-        <a id="openLineBtn" href="#" target="_blank" rel="noopener"
-            style="display:none; margin-top:16px; padding:14px 24px; background:linear-gradient(135deg,#06c755,#049e43); color:#fff; border-radius:50px; font-weight:700; font-size:1rem; text-decoration:none; text-align:center; align-items:center; justify-content:center; gap:10px;">
-            <i class="fab fa-line"></i> เปิด LINE รับบัตรสมาชิก
-        </a>
-        <div id="openLineHint"
-            style="display:none; margin-top:10px; text-align:center; color:#4b6a74; font-size:0.85rem;">
-            พิมพ์ข้อความในแชท LINE OA เพื่อรับบัตรสมาชิกของคุณ (ฟรี ไม่เสียโควต้า)
-        </div>
-
-        <div class="count-section">
-            <div class="count-number" id="countDisplay">-</div>
-            <button class="btn-check" id="checkBtn">
-                <i class="fas fa-sync-alt"></i> ดูจำนวนผู้ลงทะเบียน
-            </button>
-            <div id="countMsg" style="margin-top:10px; color:#4b6a74;"></div>
-        </div>
-
-        <div class="footer">
-            <i class="fas fa-shield-alt"></i> ข้อมูลของคุณจะถูกเก็บเป็นความลับ
-        </div>
-    </div>
-
-    <script>
-        // ============================================================
-        //  🔗 URL ของ Web App ที่ Deploy แล้ว (Apps Script)
-        // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec"; // 👈 เปลี่ยนเป็น URL จริง
-
-        // ============================================================
-        //  🧪 เทคนิคจากคลิป (0:26): เชื่อมต่อกับ LINE ทางการ
-        //  หลังลงทะเบียน → เปิดแชท LINE OA แล้วพิมพ์ข้อความ → บอท Reply ด้วยบัตรสมาชิก
-        //  (Reply API ฟรี ไม่เสียโควต้า push — ระบบจะดึง basicId อัตโนมัติ)
-        // ============================================================
-        const LINE_OA_LINK = "https://line.me/R/ti/p/@042shrup"; // 👈 fallback ถ้าดึง basicId อัตโนมัติไม่ได้
-
-        // ============================================================
-        //  🔗 Messaging API Account Linking (linkToken) — ผูกบัญชี LINE ทางการ
-        //  หลังลงทะเบียน GAS จะออก linkToken + ส่งข้อความพร้อมปุ่ม "ยืนยันการผูกบัญชี LINE"
-        //  ไปในแชท LINE OA (Reply — ฟรี) → ผู้ใช้กดยืนยัน → รับ Flex Message บัตรสมาชิก (ฟรี)
-        // ============================================================
-        const SYSTEM_NAME = "ระบบสมาชิก"; // 👈 ชื่อระบบ (ในคลิปใช้ "BMI") — แสดงบนหน้า "เชื่อมต่อแล้ว"
-
-        // ============================================================
-        //  DOM References
-        // ============================================================
-        const form = document.getElementById("myForm");
-        const subBtn = document.getElementById("sub");
-        const msgBox = document.getElementById("msgBox");
-        const msgIcon = document.getElementById("msgIcon");
-        const msgText = document.getElementById("msgText");
-        const checkBtn = document.getElementById("checkBtn");
-        const countDisplay = document.getElementById("countDisplay");
-        const countMsg = document.getElementById("countMsg");
-        const lineUserIdInput = document.getElementById("lineUserId");
-        const lineHint = document.getElementById("lineHint");
-        const openLineBtn = document.getElementById("openLineBtn");
-        const openLineHint = document.getElementById("openLineHint");
-        const connectedPanel = document.getElementById("connectedPanel");
-        const connectedTitle = document.getElementById("connectedTitle");
-
-        // ============================================================
-        //  ดึง uid จาก query string (?uid=...)
-        // ============================================================
-        function loadLineUserId() {
-            const params = new URLSearchParams(window.location.search);
-            const uid = params.get("uid");
-            if (uid) {
-                lineUserIdInput.value = uid;
-                lineHint.className = "line-hint show";
-                console.log("✅ ตรวจพบ userId จาก LINE: " + uid);
-            } else {
-                console.log("ℹ️ ไม่มี userId จาก LINE (เปิดฟอร์มตรง)");
-            }
-        }
-
-        // ============================================================
-        //  🔗 ลิงก์ทางการของ LINE OA (เปิดแชท) — ใช้หลังลงทะเบียน
-        //  ดึง basicId อัตโนมัติจาก GAS (?getProfile=1) หรือใช้ LINE_OA_LINK ที่ตั้งไว้
-        // ============================================================
-        let oaChatLink = LINE_OA_LINK;
-        function loadOaChatLink() {
-            fetch(API_URL + "?getProfile=1")
-                .then(function (r) { return r.json(); })
-                .then(function (profile) {
-                    if (profile && profile.basicId) {
-                        oaChatLink = "https://line.me/R/ti/p/" + profile.basicId;
-                        console.log("🔗 ลิงก์เปิดแชท LINE OA: " + oaChatLink);
-                    }
-                })
-                .catch(function () { /* ใช้ LINE_OA_LINK ที่ตั้งไว้ */ });
-        }
-
-        // ============================================================
-        //  Helper: แสดงข้อความ
-        // ============================================================
-        function showMessage(text, isSuccess = true, isLoading = false) {
-            if (isLoading) {
-                msgBox.className = "msg-box show loading";
-                msgIcon.className = "fas fa-spinner fa-spin";
-            } else {
-                msgBox.className = "msg-box show " + (isSuccess ? "success" : "error");
-                msgIcon.className = isSuccess ? "fas fa-check-circle" : "fas fa-exclamation-circle";
-            }
-            msgText.textContent = text;
-        }
-
-        function hideMessage() {
-            msgBox.className = "msg-box";
-        }
-
-        // ============================================================
-        //  ส่งข้อมูล (POST)
-        // ============================================================
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            hideMessage();
-
-            const agree = document.getElementById("agree");
-            if (!agree.checked) {
-                showMessage("กรุณายอมรับข้อกำหนดและเงื่อนไข", false);
-                return;
-            }
-
-            subBtn.disabled = true;
-            subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังผูกบัญชี LINE...';
-
-            // ✅ แสดงข้อความกำลังผูกบัญชี LINE
-            showMessage("⏳ กำลังบันทึกข้อมูลและผูกบัญชี LINE...", true, true);
-
-            const data = new FormData(form);
-
-            fetch(API_URL, {
-                method: "POST",
-                body: data
-            })
-                .then(res => res.text())
-                .then(text => {
-                    console.log("📬 Response from Apps Script:", text);
-
-                    if (text.includes("สำเร็จ")) {
-                        // แยก state (เผื่อใช้ในอนาคต) ออกจากข้อความ
-                        const parts = text.split("\nSTATE:");
-                        const cleanText = parts[0];
-
-                        // ✅ ตามหลักการคลิป: GAS ออก linkToken + ส่งข้อความพร้อมปุ่ม
-                        //    "ยืนยันการผูกบัญชี LINE" ไปในแชท LINE OA แล้ว (Reply — ฟรี)
-                        //    ผู้ใช้กดปุ่ม → ยืนยันผูกบัญชี → LINE ส่ง accountLink event →
-                        //    GAS Reply Flex Message บัตรสมาชิกให้ทันที (ฟรี ไม่ใช้ push)
-                        if (lineUserIdInput.value) {
-                            showMessage("✅ " + cleanText, true);
-
-                            if (openLineBtn) {
-                                openLineBtn.href = oaChatLink;
-                                openLineBtn.style.display = "flex";
-                                if (openLineHint) openLineHint.style.display = "block";
-                            }
-                        } else {
-                            showMessage("✅ " + cleanText, true);
-                        }
-                    } else {
-                        showMessage("⚠️ " + text, false);
-                    }
-                })
-                .catch(err => {
-                    showMessage("❌ เกิดข้อผิดพลาด: " + err.message, false);
-                    console.error("❌ Fetch Error:", err);
-                })
-                .finally(() => {
-                    subBtn.disabled = false;
-                    subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
-                });
-        });
-
-        // ============================================================
-        //  ดึงจำนวนข้อมูล (GET)
-        // ============================================================
-        function fetchCount() {
-            countMsg.textContent = "⏳ กำลังโหลด...";
-            countDisplay.textContent = "...";
-
-            fetch(API_URL)
-                .then(res => res.text())
-                .then(text => {
-                    console.log("📬 Count Response:", text);
-                    const num = parseInt(text);
-                    if (!isNaN(num)) {
-                        countDisplay.textContent = num;
-                        countMsg.textContent = "✅ อัปเดตล่าสุด";
-                    } else {
-                        countDisplay.textContent = "❓";
-                        countMsg.textContent = text;
-                    }
-                })
-                .catch(err => {
-                    countDisplay.textContent = "❌";
-                    countMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-                    console.error("❌ Fetch Error:", err);
-                });
-        }
-
-        checkBtn.addEventListener("click", fetchCount);
-
-        // ============================================================
-        //  โหลดหน้า
-        // ============================================================
-        window.addEventListener("DOMContentLoaded", function () {
-            loadLineUserId();
-            loadOaChatLink(); // 🔗 ดึงลิงก์เปิดแชท LINE OA อัตโนมัติ (ถ้าดึงได้)
-            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
-                countDisplay.textContent = "🔧";
-                countMsg.textContent = "⚠️ กรุณาตั้งค่า API_URL ใน JavaScript";
-            } else {
-                fetchCount();
-            }
-        });
-    </script>
+      google.script.run
+        .withSuccessHandler(function (result) {
+          status.textContent = 'สำเร็จ! กำลังพากลับไปที่แชท LINE...';
+          // พาไปที่แชท LINE OA พร้อมข้อความยืนยัน (trigger webhook + replyToken)
+          window.top.location.href = result.oaLink;
+        })
+        .withFailureHandler(function (err) {
+          btn.disabled = false;
+          status.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+        })
+        .submitRegistration(phone, birthday);
+    }
+  </script>
 </body>
-
 </html>
