@@ -381,7 +381,7 @@
             <form id="myForm" novalidate>
                 <div class="form-group">
                     <label for="phone"><i class="fas fa-phone-alt"></i> เบอร์โทรศัพท์</label>
-                    <input type="tel" id="phone" name="phone" placeholder="081-234-5678" required>
+                    <input type="tel" id="phone" name="phone" placeholder="0812345678" pattern="[0-9]{10}" maxlength="10" required>
                     <i class="fas fa-phone-alt input-icon"></i>
                 </div>
 
@@ -389,6 +389,11 @@
                     <label for="birthday"><i class="fas fa-birthday-cake"></i> วันเกิด</label>
                     <input type="date" id="birthday" name="birthday" required>
                     <i class="fas fa-birthday-cake input-icon"></i>
+                </div>
+
+                <div id="formError" class="msg-box error" style="margin-top: 0; margin-bottom: 15px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="formErrorText"></span>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="sub">
@@ -440,7 +445,6 @@
     <script>
         // ============================================================
         //  ตั้งค่า: URL ของ Web App (GAS) ที่ใช้เป็น API endpoint
-        //  ต้องใส่เสมอ เพราะ GAS ไม่มี doGet แล้ว (หน้าเว็บนี้โฮสต์ที่อื่น)
         // ============================================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
 
@@ -456,10 +460,11 @@
         const linkMsgIcon = document.getElementById("linkMsgIcon");
         const linkMsgText = document.getElementById("linkMsgText");
         const linkBtn = document.getElementById("btnLink");
+        const formError = document.getElementById("formError");
+        const formErrorText = document.getElementById("formErrorText");
 
         // ============================================================
-        //  เรียก API ฝั่งเซิร์ฟเวอร์: POST FormData ไปที่ WEB_APP_URL
-        //  (method: clientRegister -> action=register, clientRequestLink -> action=requestLink)
+        //  เรียก API ฝั่งเซิร์ฟเวอร์
         // ============================================================
         function callServer(method, args, onSuccess, onFailure) {
             if (!WEB_APP_URL) {
@@ -467,50 +472,85 @@
                 return;
             }
 
-            // ส่งแบบ FormData (multipart) -> เป็น simple request ไม่โดน CORS preflight
-            // (GAS ไม่คืน CORS header ดังนั้นส่ง JSON แบบ application/json จะถูกบล็อก)
             const fd = new FormData();
             if (method === 'clientRegister') {
                 fd.append('action', 'register');
                 fd.append('phone', args[0]);
                 fd.append('birthday', args[1]);
-            } else {
+            } else if (method === 'clientRequestLink') {
                 fd.append('action', 'requestLink');
+                fd.append('token', args[0]);
+            } else if (method === 'clientCheckStatus') {
+                fd.append('action', 'checkStatus');
                 fd.append('token', args[0]);
             }
 
             fetch(WEB_APP_URL, { method: 'POST', body: fd })
-                .then(function (res) { return res.text(); })
-                .then(function (text) {
+                .then(function(res) { return res.text(); })
+                .then(function(text) {
                     let res;
                     try {
                         res = JSON.parse(text);
                     } catch (err) {
-                        onFailure(new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง: ' + text.slice(0, 100)));
+                        onFailure(new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง'));
                         return;
                     }
                     onSuccess(res);
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     onFailure(err);
                 });
         }
 
         // ============================================================
-        //  ขั้นตอนที่ 1: ลงทะเบียน (เบอร์โทร + วันเกิด)
+        //  ตรวจสอบรูปแบบเบอร์โทรศัพท์
         // ============================================================
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
+        function validatePhone(phone) {
+            // รองรับรูปแบบ: 0812345678, 081-234-5678, +66812345678
+            const phoneRegex = /^(\+?66|0)\d{8,9}$/;
+            const cleanPhone = phone.replace(/[\s-]/g, '');
+            return phoneRegex.test(cleanPhone);
+        }
 
+        // ============================================================
+        //  ขั้นตอนที่ 1: ลงทะเบียน
+        // ============================================================
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            
             const phone = document.getElementById("phone").value.trim();
             const birthday = document.getElementById("birthday").value;
-
+            
+            // ซ่อน error เก่า
+            hideFormError();
+            
+            // ตรวจสอบความถูกต้อง
             if (!phone) {
-                showLinkStatus('error', 'กรุณากรอกเบอร์โทรศัพท์');
+                showFormError('กรุณากรอกเบอร์โทรศัพท์');
                 return;
             }
+            
+            if (!validatePhone(phone)) {
+                showFormError('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ตัวอย่าง: 0812345678)');
+                return;
+            }
+            
             if (!birthday) {
-                showLinkStatus('error', 'กรุณาเลือกวันเกิด');
+                showFormError('กรุณาเลือกวันเกิด');
+                return;
+            }
+            
+            // ตรวจสอบอายุ (ต้องไม่น้อยกว่า 1 ปี และไม่เกิน 120 ปี)
+            const birthDate = new Date(birthday);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            if (age < 1 || age > 120) {
+                showFormError('กรุณาตรวจสอบวันเกิดให้ถูกต้อง');
                 return;
             }
 
@@ -518,7 +558,7 @@
             subBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
 
             callServer('clientRegister', [phone, birthday],
-                function (res) {
+                function(res) {
                     subBtn.disabled = false;
                     subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
 
@@ -529,24 +569,27 @@
 
                         document.getElementById("tokenDisplay").textContent = regToken;
                         document.getElementById("confirmMessage").textContent = regMessage;
-                        document.getElementById("btnOpenChat").href = regOaLink;
+                        
+                        if (regOaLink) {
+                            document.getElementById("btnOpenChat").href = regOaLink;
+                        }
 
                         hideLinkStatus();
                         step1.classList.remove('show');
                         step2.classList.add('show');
                     } else {
-                        showLinkStatus('error', (res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+                        showFormError((res && res.error) ? res.error : 'ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
                     }
                 },
-                function (err) {
+                function(err) {
                     subBtn.disabled = false;
                     subBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ลงทะเบียน';
-                    showLinkStatus('error', err.message);
+                    showFormError(err.message);
                 });
         });
 
         // ============================================================
-        //  ขั้นตอนที่ 2: ขอผูกบัญชี LINE อย่างเป็นทางการ (Account Link)
+        //  ขั้นตอนที่ 2: ขอผูกบัญชี LINE
         // ============================================================
         function requestLinkAccount() {
             if (!regToken) {
@@ -555,10 +598,10 @@
             }
 
             linkBtn.disabled = true;
-            linkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังขอสิทธิ์ผูกบัญชี...';
+            linkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
 
             callServer('clientRequestLink', [regToken],
-                function (res) {
+                function(res) {
                     linkBtn.disabled = false;
                     linkBtn.innerHTML = '<i class="fas fa-link"></i> ยืนยันผูกบัญชีสมาชิก LINE';
 
@@ -568,15 +611,16 @@
                     }
 
                     if (res.status === 'ok' && res.accountLinkUrl) {
-                        // ไปหน้าผูกบัญชีของ LINE (ผู้ใช้กดยืนยัน/ปฏิเสธใน LINE)
-                        window.location.href = res.accountLinkUrl;
+                        showLinkStatus('success', 'กำลังนำท่านไปยังหน้าเชื่อมต่อ LINE...');
+                        setTimeout(function() {
+                            window.location.href = res.accountLinkUrl;
+                        }, 1000);
                     } else if (res.status === 'needChat') {
-                        // ยังไม่เคยแชทกับ OA → ต้องไปส่งข้อความยืนยันก่อน
                         if (res.oaLink) {
                             regOaLink = res.oaLink;
                             document.getElementById("btnOpenChat").href = res.oaLink;
                         }
-                        showLinkStatus('warning',
+                        showLinkStatus('warning', 
                             'ยังไม่พบการยืนยันจาก LINE กรุณากด "เปิดแชทกับ LINE OA" แล้วส่งข้อความยืนยันให้เรียบร้อย จากนั้นกดปุ่มนี้อีกครั้ง');
                     } else if (res.status === 'notfound') {
                         showLinkStatus('error', 'ไม่พบข้อมูลการลงทะเบียนนี้ในระบบ');
@@ -586,7 +630,7 @@
                         showLinkStatus('error', 'ผลลัพธ์ไม่ถูกต้องจากเซิร์ฟเวอร์');
                     }
                 },
-                function (err) {
+                function(err) {
                     linkBtn.disabled = false;
                     linkBtn.innerHTML = '<i class="fas fa-link"></i> ยืนยันผูกบัญชีสมาชิก LINE';
                     showLinkStatus('error', err.message);
@@ -594,7 +638,7 @@
         }
 
         // ============================================================
-        //  Helper
+        //  Helper Functions
         // ============================================================
         function copyToken() {
             const token = regToken || document.getElementById("tokenDisplay").textContent;
@@ -604,11 +648,11 @@
                 const btn = document.getElementById("copyBtn");
                 const old = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
-                setTimeout(function () { btn.innerHTML = old; }, 1500);
+                setTimeout(function() { btn.innerHTML = old; }, 1500);
             }
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(token).then(done).catch(function () {
+                navigator.clipboard.writeText(token).then(done).catch(function() {
                     fallbackCopy(token);
                     done();
                 });
@@ -625,7 +669,7 @@
             ta.style.opacity = '0';
             document.body.appendChild(ta);
             ta.select();
-            try { document.execCommand('copy'); } catch (e) { }
+            try { document.execCommand('copy'); } catch (e) {}
             ta.remove();
         }
 
@@ -635,6 +679,8 @@
                 linkMsgIcon.className = 'fas fa-exclamation-circle';
             } else if (type === 'warning') {
                 linkMsgIcon.className = 'fas fa-exclamation-triangle';
+            } else if (type === 'success') {
+                linkMsgIcon.className = 'fas fa-check-circle';
             } else {
                 linkMsgIcon.className = 'fas fa-info-circle';
             }
@@ -645,6 +691,25 @@
             linkMsg.className = 'msg-box';
             linkMsgText.textContent = '';
         }
+
+        function showFormError(text) {
+            formError.className = 'msg-box show error';
+            formErrorText.textContent = text;
+        }
+
+        function hideFormError() {
+            formError.className = 'msg-box error';
+            formErrorText.textContent = '';
+        }
+
+        // ฟอร์แมตเบอร์โทรศัพท์อัตโนมัติ
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+            e.target.value = value;
+        });
     </script>
 </body>
 
