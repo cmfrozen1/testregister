@@ -55,11 +55,30 @@
 
     <button id="submitBtn" onclick="submitForm()">ลงทะเบียน</button>
     <div id="status"></div>
+
+    <!-- แสดงเมื่อ auto-fill ข้อความใน LINE ไม่ทำงาน (เช่น LINE Desktop App) -->
+    <div id="fallback" style="display:none; margin-top:20px; padding:16px; background:#f0f0f0; border-radius:10px;">
+      <div style="font-size:13px; color:#555; margin-bottom:8px;">
+        ถ้าเปิด LINE แล้วห้องแชทว่าง ไม่มีข้อความ ให้กดคัดลอกข้อความนี้แล้ววางส่งในแชทเอง:
+      </div>
+      <div id="fallbackMessage" style="font-weight:600; font-size:15px; margin-bottom:10px;"></div>
+      <button id="copyBtn" style="background:#333;" onclick="copyMessage()">คัดลอกข้อความ</button>
+    </div>
   </div>
 
   <script>
     // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ลงท้ายด้วย /exec)
-    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec';
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec';
+
+    let pendingMessage = '';
+
+    function copyMessage() {
+      navigator.clipboard.writeText(pendingMessage).then(function () {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'คัดลอกแล้ว ✓';
+        setTimeout(function () { btn.textContent = 'คัดลอกข้อความ'; }, 2000);
+      });
+    }
 
     function submitForm() {
       const phone = document.getElementById('phone').value.trim();
@@ -87,6 +106,12 @@
             throw new Error('บันทึกข้อมูลไม่สำเร็จ');
           }
           status.textContent = 'สำเร็จ! กำลังพากลับไปที่แชท LINE...';
+
+          // เตรียมข้อความสำรองไว้ให้คัดลอก เผื่อ auto-fill ไม่ทำงาน
+          pendingMessage = result.message;
+          document.getElementById('fallbackMessage').textContent = result.message;
+          document.getElementById('fallback').style.display = 'block';
+
           // พาไปที่แชท LINE OA พร้อมข้อความยืนยัน (trigger webhook + replyToken)
           window.location.href = result.oaLink;
         })
