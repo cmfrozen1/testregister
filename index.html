@@ -82,8 +82,21 @@
   </div>
 
   <script>
-    // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ลงท้ายด้วย /exec)
-    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec';
+    // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ต้องลงท้ายด้วย /exec เท่านั้น)
+    // เช่น https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxx/exec
+    //
+    // ⚠️ เช็คลิสต์สำคัญ ก่อนจะโทษว่า fetch พัง (เกือบทุกเคส net::ERR_FAILED มาจาก 4 ข้อนี้):
+    //   1) ไฟล์นี้ต้องเปิดผ่าน https:// จริง (host บนเว็บ/GitHub Pages ฯลฯ)
+    //      ห้ามดับเบิลคลิกเปิดจากเครื่อง (file:///...) เด็ดขาด เพราะ origin จะเป็น 'null'
+    //      แล้ว Google จะบล็อกเสมอไม่ว่า Apps Script จะตั้งค่าถูกแค่ไหนก็ตาม
+    //   2) Deploy ต้องเป็นเวอร์ชันล่าสุดเสมอ: Deploy > Manage deployments > แก้ไข (ไอคอนดินสอ)
+    //      > Version: "New version" > Deploy — ทุกครั้งที่แก้ Code.gs ต้องทำซ้ำ ไม่งั้น URL /exec
+    //      เดิมจะยังรันโค้ดเวอร์ชันเก่าอยู่
+    //   3) ตอน Deploy ต้องตั้ง Execute as: Me, Who has access: Anyone
+    //   4) headers ต้องเป็น 'text/plain;charset=utf-8' เท่านั้น ห้ามเปลี่ยนเป็น
+    //      'application/json' เพราะจะทำให้ browser ส่ง preflight OPTIONS ไปก่อน
+    //      ซึ่ง GAS ไม่มี doOptions() รองรับ ทำให้ fail แบบเดียวกันนี้เป๊ะ
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/exec';
 
     let regToken = '';
     let pendingMessage = '';
