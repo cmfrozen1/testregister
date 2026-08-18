@@ -407,7 +407,7 @@
         //  ตั้งค่า: URL ของ Web App (GAS) ที่ใช้เป็น API endpoint
         //  *** ต้องตรงกับ URL ที่ deploy จริง (ลงท้ายด้วย /exec) ***
         // ============================================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec".trim();
 
         // ============================================================
         //  LINE Login Configuration
@@ -415,8 +415,10 @@
         //  *** Callback URL นี้ต้องเพิ่มไว้ใน LINE Developers Console
         //      (LINE Login channel > Callback URL) ให้ตรงตัวอักษรทุกตัว ***
         // ============================================================
-        const LINE_CHANNEL_ID = "2000688983";
-        const LINE_CALLBACK_URL = WEB_APP_URL;
+        const LINE_CHANNEL_ID = "2000688983".trim();
+        // .trim() กัน whitespace/ขึ้นบรรทัดใหม่แฝง ซึ่งทำให้ redirect_uri
+        // ที่ส่งไปจริงไม่ตรงกับที่ลงทะเบียนไว้ใน LINE Console แบบมองไม่เห็นด้วยตา
+        const LINE_CALLBACK_URL = WEB_APP_URL.trim();
 
         const form = document.getElementById("myForm");
         const subBtn = document.getElementById("sub");
@@ -433,6 +435,28 @@
         //  ตั้งค่า max date สำหรับวันเกิด (วันนี้) - เดิมล็อกไว้ปี 2025 ตายตัว
         // ============================================================
         document.getElementById("birthday").max = new Date().toISOString().split('T')[0];
+
+        // ============================================================
+        //  ตรวจสอบค่าตั้งต้นตอนโหลดหน้า + แสดง redirect_uri ที่จะใช้จริง
+        //  ทาง Console เพื่อให้ copy ไปเทียบกับ Callback URL ใน
+        //  LINE Developers Console ได้แบบ 1:1 (สาเหตุ 400 ที่พบบ่อยที่สุด
+        //  คือ redirect_uri ไม่ตรงกันแบบมองไม่เห็นด้วยตา เช่น มีช่องว่าง
+        //  หรือ URL คนละเวอร์ชัน deployment)
+        // ============================================================
+        (function checkConfig() {
+            const problems = [];
+            if (!WEB_APP_URL) problems.push('WEB_APP_URL ว่างเปล่า');
+            if (!LINE_CHANNEL_ID) problems.push('LINE_CHANNEL_ID ว่างเปล่า');
+            if (WEB_APP_URL && !/^https:\/\//.test(WEB_APP_URL)) problems.push('WEB_APP_URL ต้องขึ้นต้นด้วย https://');
+
+            if (problems.length) {
+                console.error('[CONFIG ERROR]', problems.join(', '));
+            }
+
+            console.log('%c[LINE Login Debug]', 'font-weight:bold;color:#06C755;');
+            console.log('redirect_uri ที่จะใช้จริง (ต้องตรงกับ Callback URL ใน LINE Developers Console แบบเป๊ะๆ ทุกตัวอักษร):');
+            console.log(LINE_CALLBACK_URL);
+        })();
 
         // ============================================================
         //  ตรวจสอบเบอร์โทรศัพท์
@@ -602,6 +626,8 @@
                         // Redirect ไปยัง LINE Login
                         setTimeout(function() {
                             const lineLoginUrl = createLineLoginUrl(lineState);
+                            console.log('[LINE Login] กำลังไปที่:', lineLoginUrl);
+                            console.log('[LINE Login] redirect_uri ที่ส่งไป:', LINE_CALLBACK_URL);
                             window.location.href = lineLoginUrl;
                         }, 800);
 
