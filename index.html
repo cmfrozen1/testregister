@@ -2,204 +2,76 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>ทดสอบเชื่อมต่อ GAS Web App</title>
   <style>
-    body {
-      font-family: -apple-system, "Segoe UI", sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 24px 16px;
-    }
-    .card {
-      max-width: 420px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 16px;
-      padding: 24px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    h2 { margin-top: 0; font-size: 20px; }
-    label { display: block; font-size: 13px; color: #666; margin: 16px 0 6px; }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    button {
-      width: 100%;
-      margin-top: 16px;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      background: #06C755;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button.secondary { background: #333; }
-    button:disabled { background: #aaa; }
-    #status { margin-top: 12px; font-size: 13px; color: #999; text-align: center; }
-    #linkStep { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-    #linkStep h3 { font-size: 15px; margin: 0 0 8px; }
-    #linkStep p { font-size: 13px; color: #666; line-height: 1.5; margin: 0 0 4px; }
-    #fallback { display: none; margin-top: 16px; padding: 16px; background: #f0f0f0; border-radius: 10px; }
-    #fallback p { font-size: 13px; color: #555; margin: 0 0 8px; }
-    #fallbackMessage { font-weight: 600; font-size: 15px; margin-bottom: 10px; }
+    body { font-family: monospace; padding: 20px; background: #111; color: #0f0; }
+    button { padding: 12px 20px; font-size: 16px; margin-bottom: 20px; }
+    pre { background: #000; padding: 16px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; }
+    .error { color: #f55; }
+    .ok { color: #5f5; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>ลงทะเบียนสมาชิก</h2>
-
-    <div id="registerForm">
-      <label>เบอร์โทรศัพท์</label>
-      <input id="phone" type="tel" placeholder="0812345678">
-
-      <label>วันเกิด</label>
-      <input id="birthday" type="date">
-
-      <button id="submitBtn">ลงทะเบียน</button>
-    </div>
-
-    <div id="status"></div>
-
-    <!-- ขั้นที่ 2: ปรากฏหลังลงทะเบียนสำเร็จ -->
-    <div id="linkStep">
-      <h3>ขั้นตอนถัดไป</h3>
-      <p>กดปุ่มด้านล่างเพื่อยืนยันผูกบัญชีสมาชิกกับ LINE ของคุณ</p>
-      <button id="linkBtn">ยืนยันผูกบัญชีสมาชิก LINE</button>
-    </div>
-
-    <!-- แสดงเมื่อ auto-fill ข้อความใน LINE ไม่ทำงาน (เช่น LINE Desktop App) -->
-    <div id="fallback">
-      <p>ถ้าเปิด LINE แล้วห้องแชทว่าง ไม่มีข้อความ ให้กดคัดลอกข้อความนี้แล้ววางส่งในแชทเอง:</p>
-      <div id="fallbackMessage"></div>
-      <button id="copyBtn" class="secondary">คัดลอกข้อความ</button>
-    </div>
-  </div>
+  <h2>ทดสอบเชื่อมต่อ GAS Web App</h2>
+  <p>แก้ URL ด้านล่างในโค้ดให้ตรงกับของคุณ แล้วกดปุ่มทดสอบ ผลจะโชว์ตรงนี้แบบละเอียด ไม่ต้องเดา</p>
+  <button id="testBtn">เริ่มทดสอบ</button>
+  <pre id="log">รอกดปุ่ม...</pre>
 
   <script>
-    // ★ แก้ตรงนี้ ★ ใส่ URL ของ Web App ที่ Deploy จาก Apps Script (ต้องลงท้ายด้วย /exec เท่านั้น)
-    // เช่น https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxx/exec
-    //
-    // ⚠️ เช็คลิสต์สำคัญ ก่อนจะโทษว่า fetch พัง (เกือบทุกเคส net::ERR_FAILED มาจาก 4 ข้อนี้):
-    //   1) ไฟล์นี้ต้องเปิดผ่าน https:// จริง (host บนเว็บ/GitHub Pages ฯลฯ)
-    //      ห้ามดับเบิลคลิกเปิดจากเครื่อง (file:///...) เด็ดขาด เพราะ origin จะเป็น 'null'
-    //      แล้ว Google จะบล็อกเสมอไม่ว่า Apps Script จะตั้งค่าถูกแค่ไหนก็ตาม
-    //   2) Deploy ต้องเป็นเวอร์ชันล่าสุดเสมอ: Deploy > Manage deployments > แก้ไข (ไอคอนดินสอ)
-    //      > Version: "New version" > Deploy — ทุกครั้งที่แก้ Code.gs ต้องทำซ้ำ ไม่งั้น URL /exec
-    //      เดิมจะยังรันโค้ดเวอร์ชันเก่าอยู่
-    //   3) ตอน Deploy ต้องตั้ง Execute as: Me, Who has access: Anyone
-    //   4) headers ต้องเป็น 'text/plain;charset=utf-8' เท่านั้น ห้ามเปลี่ยนเป็น
-    //      'application/json' เพราะจะทำให้ browser ส่ง preflight OPTIONS ไปก่อน
-    //      ซึ่ง GAS ไม่มี doOptions() รองรับ ทำให้ fail แบบเดียวกันนี้เป๊ะ
+    // ★ แก้ตรงนี้ให้ตรงกับ URL จริงของคุณ ★
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJW1B4Vp9lzLo-MQxl2MoK22h8Xo0KHQbYtbgUnBaDsYPxDtgRQzOAzubQcl4Vnkd0/exec';
 
-    let regToken = '';
-    let pendingMessage = '';
-
-    function setStatus(text) {
-      document.getElementById('status').textContent = text;
+    const log = document.getElementById('log');
+    function write(text, cls) {
+      const span = document.createElement('div');
+      if (cls) span.className = cls;
+      span.textContent = text;
+      log.appendChild(span);
     }
 
-    function copyMessage() {
-      navigator.clipboard.writeText(pendingMessage).then(function () {
-        const btn = document.getElementById('copyBtn');
-        btn.textContent = 'คัดลอกแล้ว ✓';
-        setTimeout(function () { btn.textContent = 'คัดลอกข้อความ'; }, 2000);
-      });
-    }
+    document.getElementById('testBtn').addEventListener('click', async function () {
+      log.innerHTML = '';
+      write('URL ที่หน้านี้ถูกเปิดอยู่ตอนนี้ (origin): ' + window.location.origin);
+      write('กำลังยิง GET ไปที่ /exec ก่อน (ไม่ต้อง login) ...');
 
-    function showChatStep(oaLink, message) {
-      pendingMessage = message;
-      document.getElementById('fallbackMessage').textContent = message;
-      document.getElementById('fallback').style.display = 'block';
-      window.location.href = oaLink;
-    }
-
-    // ขั้นที่ 1: ลงทะเบียน
-    function submitForm() {
-      const phone = document.getElementById('phone').value.trim();
-      const birthday = document.getElementById('birthday').value;
-      const btn = document.getElementById('submitBtn');
-
-      if (!phone || !birthday) {
-        setStatus('กรุณากรอกข้อมูลให้ครบ');
-        return;
+      // ทดสอบที่ 1: GET แบบธรรมดา ดูว่าเจอหน้า login ของ Google ไหม
+      try {
+        const getRes = await fetch(GAS_WEB_APP_URL, { method: 'GET', redirect: 'follow' });
+        write('GET status: ' + getRes.status + ' | ok: ' + getRes.ok + ' | url สุดท้ายหลัง redirect: ' + getRes.url);
+        const text = await getRes.text();
+        if (text.includes('accounts.google.com') || text.includes('ServiceLogin')) {
+          write('⚠️ พบว่าโดน redirect ไปหน้า login ของ Google → Who has access ไม่ได้ตั้งเป็น "Anyone" จริง แก้ที่ Deploy settings', 'error');
+        } else if (text.includes('<!DOCTYPE') || text.includes('ลงทะเบียน')) {
+          write('✅ GET เจอหน้าฟอร์มปกติ ไม่ติด login แสดงว่า deployment settings ถูกแล้ว', 'ok');
+        } else {
+          write('เนื้อหาที่ได้กลับมา (200 ตัวอักษรแรก): ' + text.slice(0, 200));
+        }
+      } catch (err) {
+        write('❌ GET fetch พังตั้งแต่ต้น: ' + err.message, 'error');
+        write('ถ้า error ตรงนี้คือ "Failed to fetch" และหน้านี้เปิดผ่าน file:// → ต้นเหตุคือ origin null ตามที่บอกไว้ก่อนหน้า', 'error');
       }
 
-      btn.disabled = true;
-      setStatus('กำลังบันทึกข้อมูล...');
+      write('---');
+      write('กำลังยิง POST (แบบเดียวกับตอนลงทะเบียนจริง) ...');
 
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        // ใช้ text/plain เพื่อเลี่ยง CORS preflight (GAS Web App ไม่รองรับ OPTIONS)
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'register', phone: phone, birthday: birthday })
-      })
-        .then(function (res) { return res.json(); })
-        .then(function (result) {
-          if (result.status !== 'ok') throw new Error('บันทึกข้อมูลไม่สำเร็จ');
-
-          regToken = result.token;
-          document.getElementById('registerForm').style.display = 'none';
-          document.getElementById('linkStep').style.display = 'block';
-          setStatus('บันทึกข้อมูลสำเร็จ กรุณากดปุ่มด้านล่างเพื่อยืนยันผูกบัญชี');
-        })
-        .catch(function (err) {
-          btn.disabled = false;
-          setStatus('เกิดข้อผิดพลาด: ' + err.message);
+      // ทดสอบที่ 2: POST จริงแบบเดียวกับ submitForm
+      try {
+        const postRes = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'register', phone: '0800000000', birthday: '2000-01-01' })
         });
-    }
-
-    // ขั้นที่ 2: ยืนยันผูกบัญชี LINE
-    // - ถ้ายังไม่เคยแชทกับ OA มาก่อน -> เด้งไปแชทก่อน (ตั้งค่า userId ในระบบ)
-    // - ถ้าแชทแล้ว -> ออก linkToken จริง แล้วเด้งไปหน้าจอผูกบัญชีของ LINE
-    function requestLink() {
-      const btn = document.getElementById('linkBtn');
-      btn.disabled = true;
-      setStatus('กำลังออก linkToken และสร้างการผูกบัญชี...');
-
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'requestLink', token: regToken })
-      })
-        .then(function (res) { return res.json(); })
-        .then(function (result) {
-          btn.disabled = false;
-
-          if (result.status === 'needChat') {
-            setStatus('กรุณายืนยันตัวตนในแชท LINE ก่อน แล้วค่อยกลับมากดปุ่มนี้อีกครั้ง');
-            showChatStep(result.oaLink, result.message);
-            return;
-          }
-
-          if (result.status === 'ok') {
-            setStatus('กำลังเปิดหน้าต่างผูกบัญชีกับ LINE...');
-            window.location.href = result.accountLinkUrl;
-            return;
-          }
-
-          if (result.status === 'notfound') {
-            setStatus('ไม่พบข้อมูลการลงทะเบียน กรุณาลงทะเบียนใหม่');
-            return;
-          }
-
-          setStatus(result.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-        })
-        .catch(function (err) {
-          btn.disabled = false;
-          setStatus('เกิดข้อผิดพลาด: ' + err.message);
-        });
-    }
-
-    document.getElementById('submitBtn').addEventListener('click', submitForm);
-    document.getElementById('linkBtn').addEventListener('click', requestLink);
-    document.getElementById('copyBtn').addEventListener('click', copyMessage);
+        write('POST status: ' + postRes.status + ' | ok: ' + postRes.ok + ' | type: ' + postRes.type);
+        const postText = await postRes.text();
+        write('POST response body: ' + postText);
+        if (postRes.ok) {
+          write('✅ POST สำเร็จจริง เชื่อมต่อได้ปกติแล้ว! (มีการเพิ่มแถวทดสอบเบอร์ 0800000000 ลง Sheet ไปแล้ว ลบทิ้งได้เลย)', 'ok');
+        }
+      } catch (err) {
+        write('❌ POST fetch พัง: ' + err.name + ' — ' + err.message, 'error');
+        write('ชนิด error นี้ ("TypeError: Failed to fetch") แปลว่าเบราว์เซอร์บล็อกตั้งแต่ระดับ network/CORS ก่อนจะได้รับ response กลับมาเลย ตัว error message ของ browser จะไม่บอกสาเหตุตรงๆ (เป็นข้อจำกัดด้าน security ของ fetch API) — ให้ดูผลจากทดสอบที่ 1 (GET) ด้านบนประกอบ ถ้า GET เจอหน้า login แปลว่าสาเหตุเดียวกันนี้ทำให้ POST พังด้วย', 'error');
+      }
+    });
   </script>
 </body>
 </html>
